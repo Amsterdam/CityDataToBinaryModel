@@ -1,58 +1,72 @@
-#Mesh binary file order:
+# Mesh binary file order:
 
-##header
-int32 datatype =101 #not yet
-int32 version = 1
-int32 vertexCount
-int32 normalsCount
-int32 uvsCount
-int32 indicesCount
-int32 submeshCount
+#### header
 
-##vertices
-	///foreach vertex
-	single x
-	single y
-	single z
+- ​	int32 datatype =101 #not yet
+- ​	int32 version = 1
+- ​	int32 vertexCount
+- ​	int32 normalsCount
+- ​	int32 uvsCount
+- ​	int32 indicesCount
+- ​	int32 submeshCount
 
-##normals
-	///foreach normal
-	single x
-	single y
-	single z
-	
-##uvs
-	///foreach uv
-	single x
-	single y
+#### vertices
 
-##indices
-	///foreach index
-	int32 index
-	
-##submeshes
-	///foreach submesh	(for unity setSubmesh with submeshDescriptor, baseVertex=0)
-	int32 submeshid		(to be able to skip empty submeshes)
-	int32 firstIndex			
-	int32 indexCount
-	int32 firstvertex
-	int32 vertexcount
-	
+​	foreach vertex:
+
+- ​	single x
+- ​	single y
+- ​	single z
+
+#### normals
+
+​	foreach normal:
+
+- ​	single x
+- ​	single y
+- ​	single z	
+
+#### uvs
+
+​	foreach uv:
+
+- ​	single x
+- ​	single y
+
+#### indices
+
+​	foreach index:
+
+- ​	int32 index
+  ​	
+
+#### submeshes
+
+​	foreach submesh	(for unity setSubmesh with submeshDescriptor, baseVertex=0):
+
+- ​	int32 submeshid		(to be able to skip empty submeshes)
+- ​	int32 firstIndex			
+- ​	int32 indexCount
+- ​	int32 firstvertex
+- ​	int32 vertexcount
+  ​	
 
 -------------------------------------------------------------
 
-#Mesh metadata subobjects file order:
+# Mesh metadata subobjects file order:
 
-##header
-int32 datatype =102 #not yet
-int32 version = 1
-int32 identifierCount
+#### Header
 
-##indentifiers
-	///foreach object
-	string identifying-code (UTF-8)
-	int32 firstIndex			
-	int32 indexCount
-	int32 firstvertex
-	int32 vertexcount
-	int32 submeshid
+- int32 version = 1
+- int32 identifierCount
+
+#### Indentifiers
+
+​	foreach object:
+
+- ​	string identifying-code (UTF-8)  (starting with int32 as length)
+- ​	int32 firstIndex
+- ​	int32 indexCount
+- ​	int32 firstvertex
+- ​	int32 vertexcount
+- ​	int32 submeshid
