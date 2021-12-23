@@ -372,7 +372,7 @@ namespace TileBakeLibrary
 		private void ParseExistingBinaryTile(Tile tile)
 		{
             BinaryMeshData bmd = new BinaryMeshData();
-            bmd.importData(tile);
+            bmd.ImportData(tile);
             bmd = null;
             
             // Console.WriteLine($"Parsed existing tile {tile.filePath} with {tile.SubObjects.Count} subobjects");
@@ -404,7 +404,7 @@ namespace TileBakeLibrary
             Parallel.ForEach(partitioner, i =>
              {
                  Interlocked.Increment(ref parsing);
-                 CityObject cityObject = cityJson.LoadCityObjectByID(i, lod);
+                 CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
                  Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
                  var subObject = ToSubObjectMeshData(cityObject);
                  cityJson.ClearCityObject(cityObject.keyName);
