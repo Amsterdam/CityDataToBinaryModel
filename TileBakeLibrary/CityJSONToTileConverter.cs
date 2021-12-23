@@ -372,7 +372,7 @@ namespace TileBakeLibrary
 		private void ParseExistingBinaryTile(Tile tile)
 		{
             BinaryMeshData bmd = new BinaryMeshData();
-            bmd.importData(tile);
+            bmd.ImportData(tile);
             bmd = null;
             
             // Console.WriteLine($"Parsed existing tile {tile.filePath} with {tile.SubObjects.Count} subobjects");
@@ -404,7 +404,7 @@ namespace TileBakeLibrary
             Parallel.ForEach(partitioner, i =>
              {
                  Interlocked.Increment(ref parsing);
-                 CityObject cityObject = cityJson.LoadCityObjectByID(i, lod);
+                 CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
                  Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
                  var subObject = ToSubObjectMeshData(cityObject);
                  cityJson.ClearCityObject(cityObject.keyName);
@@ -432,6 +432,7 @@ namespace TileBakeLibrary
                  {
                      if (maxNormalAngle != 0)
                      {
+
                          subObject.MergeSimilarVertices(maxNormalAngle);
                      }
                  }
@@ -447,6 +448,7 @@ namespace TileBakeLibrary
                      var newSubobjects = subObject.clipSubobject(new Vector2(tileSize, tileSize));
                      if (newSubobjects.Count == 0)
                      {
+                         subObject.calculateNormals();
                          filterobjectsBucket.Add(subObject);
                      }
                      else
@@ -549,10 +551,6 @@ namespace TileBakeLibrary
 				//Add child geometry to our subobject. (Recursive children are not allowed in CityJson)
 				AppendCityObjectGeometry(childObject, subObject, calculateNormals);
 			}
-
-            //Winding order of triangles should be reversed
-            subObject.triangleIndices.Reverse();
-
             //Check if the list if triangles is complete (divisible by 3)
             if (subObject.triangleIndices.Count % 3 != 0)
             {
