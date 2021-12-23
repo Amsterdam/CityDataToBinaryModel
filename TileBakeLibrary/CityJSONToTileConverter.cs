@@ -549,10 +549,6 @@ namespace TileBakeLibrary
 				//Add child geometry to our subobject. (Recursive children are not allowed in CityJson)
 				AppendCityObjectGeometry(childObject, subObject, calculateNormals);
 			}
-
-            //Winding order of triangles should be reversed
-            subObject.triangleIndices.Reverse();
-
             //Check if the list if triangles is complete (divisible by 3)
             if (subObject.triangleIndices.Count % 3 != 0)
             {

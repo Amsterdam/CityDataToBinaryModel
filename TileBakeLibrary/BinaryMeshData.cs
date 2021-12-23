@@ -81,8 +81,11 @@ namespace TileBakeLibrary.BinaryMesh
                         mesh.vertices.Add(ConvertVertex(subobject.vertices[i]));
                         mesh.normals.Add(ConvertNormaltoBinary(subobject.normals[i]));
                     }
-                    
+
                     // offset the indices with the value of startvertex and add to the mesh
+                    // reverse the triaqngleIndices to male it lefthanded
+                    subobject.triangleIndices.Reverse();
+
                     for (int i = 0; i < subobject.triangleIndices.Count; i++)
                     {
                         mesh.indices.Add(subobject.triangleIndices[i] + startvertex);
@@ -163,6 +166,8 @@ namespace TileBakeLibrary.BinaryMesh
                 {
                     subobject.triangleIndices.Add(mesh.indices[i + identifier.startIndex]-identifier.startVertex);
                 }
+                // reverse the triaqngleIndices to make it righthanded
+                subobject.triangleIndices.Reverse();
                 tile.AddSubObject(subobject, false);
             }
         }
