@@ -432,6 +432,7 @@ namespace TileBakeLibrary
                  {
                      if (maxNormalAngle != 0)
                      {
+
                          subObject.MergeSimilarVertices(maxNormalAngle);
                      }
                  }
@@ -447,6 +448,7 @@ namespace TileBakeLibrary
                      var newSubobjects = subObject.clipSubobject(new Vector2(tileSize, tileSize));
                      if (newSubobjects.Count == 0)
                      {
+                         subObject.calculateNormals();
                          filterobjectsBucket.Add(subObject);
                      }
                      else

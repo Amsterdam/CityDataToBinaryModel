@@ -335,6 +335,39 @@ namespace TileBakeLibrary
 
 			return null;
         }
+
+		public void calculateNormals()
+        {
+            for (int i = 0; i < triangleIndices.Count; i+=3)
+            {
+				int index1 = triangleIndices[i];
+				int index2 = triangleIndices[i+1];
+				int index3 = triangleIndices[i + 2];
+				Vector3 normal = calculateNormal(vertices[index1], vertices[index2], vertices[index3]);
+				normals[index1] = normal;
+				normals[index2] = normal;
+				normals[index3] = normal;
+			}
+        }
+
+		private static Vector3 calculateNormal(Vector3Double v1, Vector3Double v2, Vector3Double v3)
+		{
+			Vector3 normal = new Vector3();
+			Vector3Double U = v2 - v1;
+			Vector3Double V = v3 - v1;
+
+			double X = ((U.Y * V.Z) - (U.Z * V.Y));
+			double Y = ((U.Z * V.X) - (U.X * V.Z));
+			double Z = ((U.X * V.Y) - (U.Y * V.X));
+
+			// normalize it
+			double scalefactor = Math.Sqrt((X * X) + (Y * Y) + (Z * Z));
+			normal.X = (float)(X / scalefactor);
+			normal.Y = (float)(Y / scalefactor);
+			normal.Z = (float)(Z / scalefactor);
+			return normal;
+
+		}
 	}
 	 struct vertexNormalCombination : IEquatable<vertexNormalCombination>
 	{
