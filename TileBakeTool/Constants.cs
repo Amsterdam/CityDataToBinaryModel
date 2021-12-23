@@ -41,14 +41,14 @@ Required options:
 
 Extra options:
 
---replace					 Replace objects with the same ID
---id <property name>		 Unique ID property name
---type <type filter>		 Filter this type
---id-remove <string>		 Remove this substring from the ID's
---lod <lod filter>			 Target LOD. For example 2.2
---config <config file path>	 Apply settings above via config file
---clip          		     Write a brotli compressed .br variant of the .bin
---brotli					 Write a brotli compressed .br variant of the .bin
+--replace                      Replace objects with the same ID
+--id <property name>           Unique ID property name
+--type <type filter>           Filter this type
+--id-remove <string>           Remove this substring from the ID's
+--lod <lod filter>             Target LOD. For example 2.2
+--config <config file path>    Apply settings above via config file
+--clip                         Write a brotli compressed .br variant of the .bin
+--brotli                       Write a brotli compressed .br variant of the .bin
 
 Pipeline example:
 TileBakeTool.exe --source ""C:/CityJSON/Source/"" --output ""C:/CityJSON/Output/buildings_""--id ""identificatie"" --lod 2.2 --type Building --replace --brotli --id-remove ""NL.IMBAG.Pand.""
