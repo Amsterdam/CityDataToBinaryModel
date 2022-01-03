@@ -46,8 +46,7 @@ Extra options:
 --type <type filter>           Filter this type
 --id-remove <string>           Remove this substring from the ID's
 --lod <lod filter>             Target LOD. For example 2.2
---config <config file path>    Apply settings above via config file
---clip                         Write a brotli compressed .br variant of the .bin
+--config <config file path>    Apply advanced settings above via config file
 --brotli                       Write a brotli compressed .br variant of the .bin
 
 Pipeline example:
