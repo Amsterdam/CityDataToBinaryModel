@@ -2,7 +2,7 @@
   "profiles": {
     "TileBakeTool": {
       "commandName": "Project",
-      "commandLineArgs": "--config \"D:/UnityAmsterdam/CityDataToBinaryModel/config/panden TUDelftLod2-2-200x200-tiledUtrecht.json\""
+      "commandLineArgs": "--config \"D:/Software/TileBakeTool-0.0.1/panden TUDelftLod2-2.json\""
     }
   }
 }
