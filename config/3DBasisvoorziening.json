@@ -6,6 +6,7 @@
 	"removePartOfIdentifier":"",
 	"lod":1,
 	"tilingMethod":"TILED",
+	"tileSize":1000,
 	"removeSpikes":true,
 	"removeSpikesAbove": 25,
 	"removeSpikesBelow": -10,
