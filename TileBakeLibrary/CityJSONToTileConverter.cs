@@ -257,7 +257,7 @@ namespace TileBakeLibrary
                 }
 
                 if(Double.IsNaN(tileX) || Double.IsNaN(tileY)){
-                    Console.WriteLine($"Could not calculate CityObject centroid and target tile. Skipping {cityObject.id}");
+                    Console.WriteLine($"Could not calculate CityObject centroid ({cityObject.centroid}) and target tile. Skipping {cityObject.id}");
                     continue;
                 }
 
