@@ -24,7 +24,8 @@ public class ConfigFile
 	public string removePartOfIdentifier { get; set; }
 	public float lod { get; set; }
 	public string tilingMethod { get; set; }
-	public int tileSize { get; set; }
+
+	public int tileSize = 1000;
 	public bool brotliCompression { get; set; }
 	public bool removeSpikes { get; set; }
 	public float removeSpikesAbove { get; set; }
