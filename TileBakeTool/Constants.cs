@@ -27,7 +27,7 @@ namespace TileBakeTool
 	{
 		public static string helpText = @"
 
-           // Netherlands3D Binary Tiles Generator 0.1 //
+           // Netherlands3D Binary Tiles Generator 0.0.2 //
 
 
 This tool parses CityJSON files and bakes them into single-mesh binary tile files.
@@ -51,12 +51,6 @@ Extra options:
 
 Pipeline example:
 TileBakeTool.exe --source ""C:/CityJSON/Source/"" --output ""C:/CityJSON/Output/buildings_""--id ""identificatie"" --lod 2.2 --type Building --replace --brotli --id-remove ""NL.IMBAG.Pand.""
-
-Config file example:
-#Some comment
-lod=2.2
-id=building
-type=Gebouw
 
 ";
 
