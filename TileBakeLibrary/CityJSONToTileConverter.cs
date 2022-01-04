@@ -74,6 +74,11 @@ namespace TileBakeLibrary
             spikeFloor = floor;
         }
 
+        public void SetTileSize(int tilesize)
+        {
+            tileSize = tilesize;
+        }
+
 		/// <summary>
 		/// The LOD we want to parse. 
 		/// </summary>
@@ -317,13 +322,18 @@ namespace TileBakeLibrary
                     //Create binary files
                     //BinaryMeshWriter.Save(tile);
                     BinaryMeshData bmd = new BinaryMeshData();
-                    bmd.ExportData(tile);
+                    if (tile.filePath.Contains("NaN")==false)
+                    {
+                        bmd.ExportData(tile);
+                    
+                    
 
                     //Compressed variant
                     //if (brotliCompress) BrotliCompress.Compress(tile.filePath);
 
                     //Optionaly write other format(s) for previewing purposes
                     if (createOBJFiles) OBJWriter.Save(tile);
+                    }
                     Interlocked.Increment(ref counter);
                     Console.Write($"\rsaving files...{counter}");
                 }
@@ -407,7 +417,7 @@ namespace TileBakeLibrary
                  CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
                  Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
                  var subObject = ToSubObjectMeshData(cityObject);
-                 cityJson.ClearCityObject(cityObject.keyName);
+                 //cityJson.ClearCityObject(cityObject.keyName);
                  cityObject = null;
                  Interlocked.Decrement(ref parsing);
                  
