@@ -274,8 +274,7 @@ namespace Netherlands3D.CityJSON
 					JSONNode childnode = cityJsonNode["CityObjects"][childname];
 					if (childnode == null)
 					{
-						//Could not get child node. Skipping.
-						continue;
+						Console.WriteLine($"Could not find child with key: {childname}");
 					}
 
 					CityObject child = ReadCityObject(childnode);
