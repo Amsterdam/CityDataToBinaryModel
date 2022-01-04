@@ -236,8 +236,6 @@ namespace TileBakeLibrary
         {
             TileSubobjects();
             AddObjectsFromBinaryTile();
-            
-
         }
 
         private void TileSubobjects()
@@ -247,10 +245,17 @@ namespace TileBakeLibrary
             {
                 double tileX = Math.Floor(cityObject.centroid.X / tileSize) * (int)tileSize;
                 double tileY = Math.Floor(cityObject.centroid.Y / tileSize) * (int)tileSize;
+                
                 if (tileX==0 || tileY==0)
                 {
-                    Console.WriteLine("found cityObject with no geometry");
+                    Console.WriteLine("Found cityObject with no geometry");
                 }
+
+                if(Double.IsNaN(tileX) || Double.IsNaN(tileY)){
+                    Console.WriteLine($"Could not calculate CityObject centroid and target tile. Skipping {cityObject.id}");
+                    continue;
+                }
+
                 Vector2Double tileposition;
                 bool found = false;
                 for (int i = 0; i < tiles.Count; i++)

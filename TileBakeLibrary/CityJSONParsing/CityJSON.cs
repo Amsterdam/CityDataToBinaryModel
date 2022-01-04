@@ -272,6 +272,12 @@ namespace Netherlands3D.CityJSON
 				{
 					string childname = childrenNode[i];
 					JSONNode childnode = cityJsonNode["CityObjects"][childname];
+					if (childnode == null)
+					{
+						//Could not get child node. Skipping.
+						continue;
+					}
+
 					CityObject child = ReadCityObject(childnode);
 					child.keyName = childname;
 

@@ -105,7 +105,6 @@ namespace TileBakeLibrary.BinaryMesh
             mesh.normalsCount = mesh.normals.Count;
             mesh.indexCount = mesh.indices.Count;
 
-
             //write bin-file
             BinaryMeshWriter.WriteMesh(mesh, tile.filePath);
 
