@@ -256,11 +256,6 @@ namespace TileBakeLibrary
                     Console.WriteLine("Found cityObject with no geometry");
                 }
 
-                if(Double.IsNaN(tileX) || Double.IsNaN(tileY)){
-                    Console.WriteLine($"Could not calculate CityObject centroid ({cityObject.centroid}) and target tile. Skipping {cityObject.id}");
-                    continue;
-                }
-
                 Vector2Double tileposition;
                 bool found = false;
                 for (int i = 0; i < tiles.Count; i++)
