@@ -158,6 +158,10 @@ namespace Netherlands3D.CityJSON
 
 			//Read filer object type
 			var type = node["type"];
+            if (type == null)
+            {
+				return null;
+            }
 			cityObject.cityObjectType = type.Value;
 			if (filter != "" && (type == null || type != filter))
 			{

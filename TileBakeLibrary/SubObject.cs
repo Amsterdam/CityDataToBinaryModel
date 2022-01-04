@@ -255,23 +255,47 @@ namespace TileBakeLibrary
 
             for (int x = rdXmin; x < rdXmax; x += (int)size.X)
             {
-				DMesh3 columnMesh = CutColumnMesh(x,rdYmin);
-                for (int y = rdYmin; y < rdYmax; y += (int)size.Y)
+				DMesh3 columnMesh = CutColumnMesh(x,rdYmin,size.X);
+				var localbounds = MeshMeasurements.Bounds(columnMesh, null);
+				int localYmin = (int)Math.Floor(localbounds.Min.y / size.Y) * (int)size.Y;
+				int localYmax = (int)Math.Ceiling(localbounds.Max.y / size.Y) * (int)size.Y; ;
+                if (localYmax-localYmin==(int)size.Y)
                 {
-                    SubObject newSubobject = clipMesh(columnMesh, x, y);
+					subObjects.Add(createSubobjectFromMesh(columnMesh,x,localYmin,(int)size.Y));
+                }
+				else
+				{ 
+                for (int y = localYmin; y < localYmax; y += (int)size.Y)
+                {
+                    SubObject newSubobject = clipMesh(columnMesh, x, y,size.Y);
                     if (newSubobject != null)
                     {
 
                         subObjects.Add(newSubobject);
                     }
                 }
-            }
+				}
+			}
 
 
             return subObjects;
 		}
 
-		private DMesh3 CutColumnMesh(double X, double Y)
+		private SubObject createSubobjectFromMesh(DMesh3 mesh,int x,int y,int size)
+        {
+			//create new subobject
+			SubObject subObject = new SubObject();
+
+			subObject.centroid = new Vector2Double(x+(size/2),y+(size/2));
+			subObject.id = id;
+			subObject.parentSubmeshIndex = parentSubmeshIndex;
+			subObject.mesh = mesh;
+			subObject.saveMesh();
+
+			return subObject;
+		}
+
+		private DMesh3 CutColumnMesh(int X, int Y, float tileSize)
         {
 			DMesh3 clippedMesh = new DMesh3(false, false, false, false);
 			clippedMesh.Copy(mesh);
@@ -284,10 +308,10 @@ namespace TileBakeLibrary
 				mpc.Cut();
 				clippedMesh = mpc.Mesh;
 			}
-            if (bounds.Max.x>X+1000)
+            if (bounds.Max.x>X+tileSize)
             {
 				//cut off the right side
-				mpc = new MeshPlaneCut(clippedMesh, new Vector3d(X + 1000, Y + 1000, 0), new Vector3d(1, 0, 0));
+				mpc = new MeshPlaneCut(clippedMesh, new Vector3d(X + tileSize, Y, 0), new Vector3d(1, 0, 0));
 				mpc.Cut();
 				clippedMesh = mpc.Mesh;
 			}
@@ -295,7 +319,7 @@ namespace TileBakeLibrary
 			//cut off the top
 		}
 
-		private SubObject clipMesh(DMesh3 columnMesh, double X, double Y)
+		private SubObject clipMesh(DMesh3 columnMesh, int X, int Y, float tileSize)
         {
 			SubObject subObject; 
 			DMesh3 clippedMesh = new DMesh3(false, false, false, false);
@@ -304,10 +328,10 @@ namespace TileBakeLibrary
 			var bounds = MeshMeasurements.Bounds(clippedMesh, null);
 			//cut off the top
 			MeshPlaneCut mpc;
-            if (bounds.Max.y>Y+1000)
+            if (bounds.Max.y>Y+tileSize)
             {
 				//cut off the top
-				mpc = new MeshPlaneCut(clippedMesh, new Vector3d(X + 1000, Y + 1000, 0), new Vector3d(0, 1, 0));
+				mpc = new MeshPlaneCut(clippedMesh, new Vector3d(X + tileSize, Y + tileSize, 0), new Vector3d(0, 1, 0));
 				mpc.Cut();
 				clippedMesh = mpc.Mesh;
 			}
@@ -324,7 +348,7 @@ namespace TileBakeLibrary
 				//create new subobject
 				subObject = new SubObject();
 				//var center = MeshMeasurements.Centroid(clippedMesh);
-				subObject.centroid = new Vector2Double(X+500, Y+500);
+				subObject.centroid = new Vector2Double(X+(tileSize/2f), Y+(tileSize/2f));
 				subObject.id = id;
 				subObject.parentSubmeshIndex = parentSubmeshIndex;
 				subObject.mesh = clippedMesh;
