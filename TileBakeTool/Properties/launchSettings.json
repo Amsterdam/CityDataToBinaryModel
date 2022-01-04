@@ -2,7 +2,7 @@
   "profiles": {
     "TileBakeTool": {
       "commandName": "Project",
-      "commandLineArgs": "--config \"D:/github/TileBakeTool/config/3DBasisvoorziening.json\""
+      "commandLineArgs": "--config \"C:\\Projects\\GemeenteAmsterdam\\Solution\\TileBakeTool\\config\\v210908_fd2cee53.json\""
     }
   }
 }
