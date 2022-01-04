@@ -67,20 +67,20 @@ namespace TileBakeLibrary
 				subObjects.Add(subObject);
 				return; 
 			}
-			bool alreadyExists = false;
-			string id = subObject.id;
+            bool alreadyExists = false;
+            string id = subObject.id;
             for (int i = 0; i < subObjects.Count; i++)
             {
                 if (id == subObjects[i].id)
                 {
-					alreadyExists = true;
-					break;
+                    alreadyExists = true;
+                    break;
                 }
             }
             if (!alreadyExists)
             {
-				subObjects.Add(subObject);
-			}
-		}		
+                subObjects.Add(subObject);
+            }
+        }		
 	}
 }

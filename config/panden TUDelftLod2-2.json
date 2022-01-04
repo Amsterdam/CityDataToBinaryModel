@@ -6,6 +6,7 @@
 	"removePartOfIdentifier":"NL.IMBAG.Pand.",
 	"lod":2.2,
 	"tilingMethod":"OVERLAP",
+	"tileSize":1000;
 	"removeSpikes":false,
 	"removeSpikesAbove": 25,
 	"removeSpikesBelow": -10,
