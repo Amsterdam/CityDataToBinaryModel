@@ -212,6 +212,7 @@ namespace TileBakeLibrary
                 tiles = new List<Tile>();
                 var index = i;
                 filecounter++;
+                Console.WriteLine($"processing file {filecounter} of {sourceFiles.Length}");
                 var cityObjects = CityJSONParseProcess(cityJson);
                 allSubObjects.Clear();
                 allSubObjects=cityObjects;
