@@ -594,6 +594,7 @@ namespace TileBakeLibrary
                 
                 if (surface.outerRing.Count == 3 && surface.innerRings.Count == 0)
                 {
+                    count = vertexlist.Count + subObject.vertices.Count;
                     List<int> newindices = new List<int> { count, count + 1, count + 2 };
                     count += 3;
                     indexlist.AddRange(newindices);
@@ -612,7 +613,7 @@ namespace TileBakeLibrary
                     
                      continue;
                 }
-
+                
                 //Our mesh output data per surface
                 Vector3[] surfaceVertices;
 				Vector3[] surfaceNormals;
@@ -626,7 +627,6 @@ namespace TileBakeLibrary
                 {
                     outside.Add((Vector3)(surface.outerRing[i] - offsetPolygons));
                 }
-
                 List<List<Vector3>> holes = new List<List<Vector3>>();
                 for (int i = 0; i < surface.innerRings.Count; i++){
                     List<Vector3> inner = new List<Vector3>();
@@ -634,6 +634,7 @@ namespace TileBakeLibrary
 					{
                         inner.Add((Vector3)(surface.innerRings[i][j] - offsetPolygons));
                     }
+
                     holes.Add(inner);
 				}
 
@@ -650,13 +651,13 @@ namespace TileBakeLibrary
                 //Poly2Mesh takes care of calculating normals, using a right-handed coordinate system
 				Poly2Mesh.CreateMeshData(poly, out surfaceVertices,out surfaceNormals, out surfaceIndices, out surfaceUvs);
 
-                var offset = subObject.vertices.Count;
+                var offset = vertexlist.Count+subObject.vertices.Count;
 
                 //Append verts, normals and uvs
                 for (int j = 0; j < surfaceVertices.Length; j++)
 				{
-					subObject.vertices.Add(((Vector3Double)surfaceVertices[j]) + offsetPolygons);
-                    subObject.normals.Add(surfaceNormals[j]);
+					vertexlist.Add(((Vector3Double)surfaceVertices[j]) + offsetPolygons);
+                    normallist.Add(surfaceNormals[j]);
 
                     if(surfaceUvs!= null)
 					    subObject.uvs.Add(surfaceUvs[j]);
@@ -665,7 +666,7 @@ namespace TileBakeLibrary
                 //Append indices ( corrected to offset )
 				for (int j = 0; j < surfaceIndices.Length; j++)
 				{
-					subObject.triangleIndices.Add(offset + surfaceIndices[j]);
+					indexlist.Add(offset + surfaceIndices[j]);
 				}
 			}
 

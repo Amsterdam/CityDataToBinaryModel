@@ -2,7 +2,7 @@
   "profiles": {
     "TileBakeTool": {
       "commandName": "Project",
-      "commandLineArgs": "--config \"D:/Software/TileBakeTool-0.0.1/panden TUDelftLod2-2.json\""
+      "commandLineArgs": "--config \"E:/brondata/pandenTUDelft/ahn4/panden Amsterdam TUDelftLod2-2.json\""
     }
   }
 }
