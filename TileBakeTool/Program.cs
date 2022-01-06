@@ -52,11 +52,6 @@ namespace TileBakeTool
 
 		static void Main(string[] args)
 		{
-            //var test = new test();
-            //test.readtest();
-
-
-
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
             if (args.Length == 0 || (args.Length == 1 && args[0].ToLower().Contains("help")))
