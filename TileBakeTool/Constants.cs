@@ -27,7 +27,7 @@ namespace TileBakeTool
 	{
 		public static string helpText = @"
 
-           // Netherlands3D Binary Tiles Generator 0.0.2 //
+           // Netherlands3D Binary Tiles Generator //
 
 
 This tool parses CityJSON files and bakes them into single-mesh binary tile files.
