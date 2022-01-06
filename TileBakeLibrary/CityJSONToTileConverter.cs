@@ -54,7 +54,7 @@ namespace TileBakeLibrary
 		private float lod = 0;
 		private string filterType = "";
 
-		public string TilingMethod = "Overlap";
+		public string TilingMethod = "OVERLAP"; //OVERLAP, TILED
 
 		private int tileSize = 1000;
 
@@ -179,7 +179,6 @@ namespace TileBakeLibrary
 			}
 
 			//Create a threadable task for every file, that returns a list of parsed cityobjects
-
 			Console.WriteLine($"Parsing {sourceFiles.Length} CityJSON files...");
 			totalFiles = sourceFiles.Length;
 			if (sourceFiles.Length > 0)
@@ -203,9 +202,7 @@ namespace TileBakeLibrary
 					}
 				);
 
-
 				thread.Start();
-
 
 				Stopwatch watch = new Stopwatch();
 				watch.Start();
@@ -238,8 +235,6 @@ namespace TileBakeLibrary
 				CompressFiles();
 			}
 		}
-
-
 
 		private void PrepareTiles()
 		{
@@ -306,7 +301,7 @@ namespace TileBakeLibrary
 			Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 			Console.Write($"\rBaking {tiles.Count} tiles");
 			//Threaded writing of binary meshes + compression
-			Console.Write("\rsaving files...          ");
+			Console.Write("\rSaving files...          ");
 			int counter = 0;
 
 			Parallel.ForEach(tiles, tile =>
@@ -317,23 +312,10 @@ namespace TileBakeLibrary
 				}
 				else
 				{
-					//Bake the tile, and lets save it!
-
-					//tile.Bake();
-
-					//Console.WriteLine($"Saving {tile.filePath} containing {tile.SubObjects.Count} SubObjects");
-
-					//Create binary files
-					//BinaryMeshWriter.Save(tile);
 					BinaryMeshData bmd = new BinaryMeshData();
 					if (tile.filePath.Contains("NaN") == false)
 					{
 						bmd.ExportData(tile);
-
-
-
-						//Compressed variant
-						//if (brotliCompress) BrotliCompress.Compress(tile.filePath);
 
 						//Optionaly write other format(s) for previewing purposes
 						if (createOBJFiles) OBJWriter.Save(tile);
@@ -374,8 +356,6 @@ namespace TileBakeLibrary
 			Console.WriteLine($"Duration: {elapsedTimeString}");
 		}
 
-
-
 		public void SetObjectFilters(CityObjectFilter[] cityObjectFilters)
 		{
 			this.cityObjectFilters = cityObjectFilters;
@@ -387,9 +367,8 @@ namespace TileBakeLibrary
 		private void ParseExistingBinaryTile(Tile tile)
 		{
 			BinaryMeshData bmd = new BinaryMeshData();
-			bmd.ImportData(tile);
+			bmd.ImportData(tile, replaceExistingIDs);
 			bmd = null;
-
 			// Console.WriteLine($"Parsed existing tile {tile.filePath} with {tile.SubObjects.Count} subobjects");
 		}
 

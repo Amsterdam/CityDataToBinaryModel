@@ -142,7 +142,7 @@ namespace TileBakeLibrary.BinaryMesh
             return new Vector3Double(X, Y, Z);
         }
 
-        public void ImportData(Tile tile)
+        public void ImportData(Tile tile, bool replaceExistingIDs = false)
         {
             origin = tile.position;
             tileSize = tile.size;
@@ -151,6 +151,11 @@ namespace TileBakeLibrary.BinaryMesh
             IdentifierData identifierdata = BinaryMeshReader.ReadBinaryIdentifiers(identifierFilename);
             foreach (Identifier identifier in identifierdata.identifiers)
             {
+                if(replaceExistingIDs && tile.SubObjects.Any((subObject) => subObject.id == identifier.objectID)){
+                    Console.WriteLine($"Replacing object with ID: {identifier.objectID}");
+                    continue;
+				}
+
                 SubObject subobject = new SubObject();
                 subobject.id = identifier.objectID;
                 subobject.parentSubmeshIndex = identifier.submeshIndex;

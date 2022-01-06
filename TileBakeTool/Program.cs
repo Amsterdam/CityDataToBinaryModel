@@ -195,8 +195,8 @@ namespace TileBakeTool
 				tileBaker.SetClipSpikes(removeSpikes, spikeCeiling, spikeFloor);
 				tileBaker.SetObjectFilters(configFile.cityObjectFilters);
 				tileBaker.SetTileSize(configFile.tileSize);
+				tileBaker.TilingMethod = configFile.tilingMethod;
 			}
-			tileBaker.TilingMethod = configFile.tilingMethod;
 
 			tileBaker.Convert();
 		}
