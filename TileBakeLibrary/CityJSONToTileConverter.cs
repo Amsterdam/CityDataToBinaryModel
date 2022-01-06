@@ -67,7 +67,7 @@ namespace TileBakeLibrary
 		private float spikeCeiling = 0;
 		private float spikeFloor = 0;
 
-		public void setClipSpikes(bool setFunction, float ceiling, float floor)
+		public void SetClipSpikes(bool setFunction, float ceiling, float floor)
 		{
 			clipSpikes = setFunction;
 			spikeCeiling = ceiling;
@@ -187,7 +187,6 @@ namespace TileBakeLibrary
 				cityJson = new CityJSON(sourceFiles[0], true, true);
 			}
 
-
 			for (int i = 0; i < sourceFiles.Length; i++)
 			{
 				CityJSON nextCityJSON = null;
@@ -198,12 +197,11 @@ namespace TileBakeLibrary
 				}
 
 				Thread thread;
-				thread = new Thread(
-					   () =>
-					   {
-						   nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);
-					   }
-					   );
+				thread = new Thread(() =>  
+					{
+						nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);
+					}
+				);
 
 
 				thread.Start();
