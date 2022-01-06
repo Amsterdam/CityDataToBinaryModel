@@ -31,7 +31,8 @@ namespace TileBakeLibrary
 		{
 			if(!File.Exists(input))
 			{
-				throw new FileNotFoundException();
+				Console.WriteLine($"Could not find file: {input}");
+				return;
 			}
 
 			//Read bytes into memory
