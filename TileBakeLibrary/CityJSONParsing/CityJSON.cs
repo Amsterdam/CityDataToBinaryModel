@@ -398,7 +398,7 @@ namespace Netherlands3D.CityJSON
 					UVs.Add(textureVertices[vectornode.AsInt]);
 				}
 			}
-			UVs.Reverse();
+			//UVs.Reverse();
 			surf.outerringUVs = UVs;
 
 			//inner rings
@@ -414,7 +414,7 @@ namespace Netherlands3D.CityJSON
 					}
 					counter++;
 				}
-				UVs.Reverse();
+				//UVs.Reverse();
 				surf.innerringUVs.Add(UVs);
 			}
 			return surf;
