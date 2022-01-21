@@ -89,7 +89,7 @@ namespace TileBakeLibrary.BinaryMesh
                     }               
 
                     // offset the indices with the value of startvertex and add to the mesh
-                    // reverse the triaqngleIndices to male it lefthanded
+                    // reverse the triaqngleIndices to make it lefthanded
                     subobject.triangleIndices.Reverse();
 
                     for (int i = 0; i < subobject.triangleIndices.Count; i++)

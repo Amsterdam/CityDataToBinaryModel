@@ -38,14 +38,18 @@ namespace TileBakeLibrary
 		private double distanceMergeThreshold = 0.01;
 		private DMesh3 mesh;
 		public float maxVerticesPerSquareMeter;
+
 		public void MergeSimilarVertices(float mergeVerticesBelowNormalAngle)
 		{
+			return;
+
 			List<Vector3Double> cleanedVertices = new List<Vector3Double>();
 			List<Vector3> cleanedNormals = new List<Vector3>();
 			List<Vector2> cleanedUvs = new List<Vector2>();
 			
 			Vector3Double vertex;
 			Vector3 normal;
+			Vector2 uv;
 			int oldIndex =0;
 			int newIndex = 0;
 			Dictionary< vertexNormalCombination,int> verts = new Dictionary<vertexNormalCombination,int>();
@@ -55,12 +59,14 @@ namespace TileBakeLibrary
 				oldIndex = triangleIndices[i];
 				vertex = vertices[oldIndex];
 				normal = normals[oldIndex];
+				uv = uvs[oldIndex];
 				vertexNormalCombination vnc = new vertexNormalCombination(vertex, normal);
                 if (!verts.ContainsKey(vnc))
                 {
 					newIndex = cleanedVertices.Count();
 					cleanedNormals.Add(normal);
 					cleanedVertices.Add(vertex);
+					cleanedUvs.Add(uv);
 					verts.Add(vnc, newIndex);
 					indexmap.Add(i, newIndex);
                 }
@@ -73,9 +79,8 @@ namespace TileBakeLibrary
             }
 			vertices = cleanedVertices;
 			normals = cleanedNormals;
-
-
-        }
+			uvs = cleanedUvs;
+		}
 
 		private int GetOrAddVertexIndex(int vertexIndex, List<Vector3Double> cleanedVertices, List<Vector3> cleanedNormals, List<Vector2> cleanedUvs, float angleThreshold)
 		{
