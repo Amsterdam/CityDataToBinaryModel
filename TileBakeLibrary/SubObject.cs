@@ -198,14 +198,11 @@ namespace TileBakeLibrary
             if (mesh.VertexCount > maxSurfaceCount)
             {
                 r.ReduceToVertexCount(maxSurfaceCount);
-
             }
 
-           mesh = r.Mesh;
+			mesh = r.Mesh;
 
 			saveMesh();
-
-
 		}
 
 		public void ClipSpikes(float ceiling, float floor)
