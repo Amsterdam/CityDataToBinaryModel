@@ -41,8 +41,6 @@ namespace TileBakeLibrary
 
 		public void MergeSimilarVertices(float mergeVerticesBelowNormalAngle)
 		{
-			return;
-
 			List<Vector3Double> cleanedVertices = new List<Vector3Double>();
 			List<Vector3> cleanedNormals = new List<Vector3>();
 			List<Vector2> cleanedUvs = new List<Vector2>();
