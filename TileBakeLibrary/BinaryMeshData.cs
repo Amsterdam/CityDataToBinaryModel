@@ -36,8 +36,9 @@ namespace TileBakeLibrary.BinaryMesh
         /// <summary>
         /// export data from a tile to a binaryMesh an a binary data mesh
         /// </summary>
-        /// <param name="tile"></param>
-        public void ExportData(Tile tile)
+        /// <param name="tile">Tile containing cityobjects</param>
+        /// /// <param name="exportUVs">Export UV coordinates. UV length is 0 if not exported</param>
+        public void ExportData(Tile tile, bool exportUVs = false)
         {
             origin = tile.position;
             tileSize = tile.size;
@@ -82,11 +83,15 @@ namespace TileBakeLibrary.BinaryMesh
                         mesh.normals.Add(ConvertNormaltoBinary(subobject.normals[i]));
                         
                     }
-                    //optional uvs
-                    for (int i = 0; i < subobject.uvs.Count; i++)
+
+                    if (exportUVs)
                     {
-                        mesh.uvs.Add(subobject.uvs[i]);
-                    }               
+                        //optional uvs
+                        for (int i = 0; i < subobject.uvs.Count; i++)
+                        {
+                            mesh.uvs.Add(subobject.uvs[i]);
+                        }
+                    }
 
                     // offset the indices with the value of startvertex and add to the mesh
                     // reverse the triaqngleIndices to make it lefthanded

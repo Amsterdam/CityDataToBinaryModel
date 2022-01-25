@@ -51,6 +51,8 @@ namespace TileBakeLibrary
 
 		private bool addToExistingTiles = false;
 
+		private bool exportUVCoordinates = false;
+
 		private float lod = 0;
 		private string filterType = "";
 
@@ -132,6 +134,11 @@ namespace TileBakeLibrary
 		public void SetReplace(bool replace)
 		{
 			this.replaceExistingIDs = replace;
+		}
+
+		public void SetExportUV(bool exportUV)
+		{
+			this.exportUVCoordinates = exportUV;
 		}
 
 		/// <summary>
@@ -315,7 +322,7 @@ namespace TileBakeLibrary
 					BinaryMeshData bmd = new BinaryMeshData();
 					if (tile.filePath.Contains("NaN") == false)
 					{
-						bmd.ExportData(tile);
+						bmd.ExportData(tile, exportUVCoordinates);
 
 						//Optionaly write other format(s) for previewing purposes
 						if (createOBJFiles) OBJWriter.Save(tile);
@@ -651,7 +658,11 @@ namespace TileBakeLibrary
 				{
 					vertexlist.Add(((Vector3Double)surfaceVertices[j]) + offsetPolygons);
 					normallist.Add(surfaceNormals[j]);
-					uvsList.Add(surfaceUvs[j]);
+
+					if (surfaceUvs != null)
+					{
+						uvsList.Add(surfaceUvs[j]);
+					}
 				}
 
 				//Append indices ( corrected to offset )
