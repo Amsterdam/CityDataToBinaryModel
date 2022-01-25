@@ -58,7 +58,7 @@ namespace TileBakeLibrary
 				vertex = vertices[oldIndex];
 				normal = normals[oldIndex];
 
-				if (uvs.Count > 0)
+				if (uvs.Count > 0 && uvs.Count == vertices.Count)
 				{
 					uv = uvs[oldIndex];
 				}
@@ -69,7 +69,7 @@ namespace TileBakeLibrary
 					newIndex = cleanedVertices.Count();
 					cleanedNormals.Add(normal);
 					cleanedVertices.Add(vertex);
-					if (uvs.Count > 0)
+					if (uvs.Count > 0 && uvs.Count == vertices.Count)
 					{
 						cleanedUvs.Add(uv);
 					}

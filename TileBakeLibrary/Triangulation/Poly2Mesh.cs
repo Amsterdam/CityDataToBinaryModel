@@ -127,7 +127,7 @@ namespace JoeStrout
 
             public Vector2 ClosestUV(Vector3 pos)
             {
-                Vector2 bestUV = outsideUVs[0];
+                Vector2 bestUV = (outsideUVs.Count > 0) ? outsideUVs[0] : new Vector2(0,0);
                 float bestDSqr = (outside[0] - pos).LengthSquared();
                 for (int i = 1; i < outsideUVs.Count; i++)
                 {
@@ -138,17 +138,21 @@ namespace JoeStrout
                         bestUV = outsideUVs[i];
                     }
                 }
-                for (int h = 0; h < holes.Count; h++)
+
+                if (holesUVs.Count == holes.Count)
                 {
-                    List<Vector3> hole = holes[h];
-                    List<Vector2> holeUVs = holesUVs[h];
-                    for (int i = 0; i < holeUVs.Count; i++)
+                    for (int h = 0; h < holes.Count; h++)
                     {
-                        float dsqr = (hole[i] - pos).LengthSquared();
-                        if (dsqr < bestDSqr)
+                        List<Vector3> hole = holes[h];
+                        List<Vector2> holeUVs = holesUVs[h];
+                        for (int i = 0; i < holeUVs.Count; i++)
                         {
-                            bestDSqr = dsqr;
-                            bestUV = holeUVs[i];
+                            float dsqr = (hole[i] - pos).LengthSquared();
+                            if (dsqr < bestDSqr)
+                            {
+                                bestDSqr = dsqr;
+                                bestUV = holeUVs[i];
+                            }
                         }
                     }
                 }
