@@ -136,7 +136,9 @@ namespace TileBakeLibrary
 			};
 			bufferViews.Add(verticesView);
 			bufferViews.Add(normalsView);
-			bufferViews.Add(uvsView);
+
+			if(mesh.uvCount>0)
+				bufferViews.Add(uvsView);
 
 			//Now a unique indices view per submesh
 			for (int i = 0; i < mesh.submeshes.Count; i++)
@@ -184,12 +186,16 @@ namespace TileBakeLibrary
 			{
 				bufferView = 2,
 				componentType = 5126,
-				count = mesh.normalsCount,
+				count = mesh.uvCount,
 				type = "VEC2"
 			};
 			accessors.Add(vertices);
 			accessors.Add(normals);
-			accessors.Add(uvs);
+
+			if(mesh.uvCount > 0)
+				accessors.Add(uvs);
+
+			var currentAccessorsOffset = accessors.Count;
 
 			//And add a unique accessor per submesh (if they have triangles)
 			var subMeshWithDataIndex = 0;
@@ -200,7 +206,7 @@ namespace TileBakeLibrary
 					var submesh = mesh.submeshes[i];
 					var indices = new Accessor()
 					{
-						bufferView = 3 + subMeshWithDataIndex,
+						bufferView = currentAccessorsOffset + subMeshWithDataIndex,
 						componentType = 5125,
 						count = submesh.indexcount,
 						type = "SCALAR"
@@ -241,9 +247,9 @@ namespace TileBakeLibrary
 									attributes = new Attributes(){
 										POSITION=0,
 										NORMAL=1,
-										TEXCOORD_0=2
+										TEXCOORD_0 = (mesh.uvCount > 0) ? 2 : null
 									},
-									indices=nodeMeshIndex+dataSlots
+									indices=nodeMeshIndex+((mesh.uvCount > 0) ? 3 : 2)
 								}
 						}
 					};

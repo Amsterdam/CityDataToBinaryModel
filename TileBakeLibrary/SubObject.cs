@@ -47,8 +47,8 @@ namespace TileBakeLibrary
 			
 			Vector3Double vertex;
 			Vector3 normal;
-			Vector2 uv;
-			int oldIndex =0;
+			Vector2 uv = new Vector2(0,0);
+			int oldIndex = 0;
 			int newIndex = 0;
 			Dictionary< vertexNormalCombination,int> verts = new Dictionary<vertexNormalCombination,int>();
 			Dictionary<int, int> indexmap = new Dictionary<int, int>(); // old index --> new index
@@ -57,14 +57,22 @@ namespace TileBakeLibrary
 				oldIndex = triangleIndices[i];
 				vertex = vertices[oldIndex];
 				normal = normals[oldIndex];
-				uv = uvs[oldIndex];
+
+				if (uvs.Count > 0)
+				{
+					uv = uvs[oldIndex];
+				}
+
 				vertexNormalCombination vnc = new vertexNormalCombination(vertex, normal);
                 if (!verts.ContainsKey(vnc))
                 {
 					newIndex = cleanedVertices.Count();
 					cleanedNormals.Add(normal);
 					cleanedVertices.Add(vertex);
-					cleanedUvs.Add(uv);
+					if (uvs.Count > 0)
+					{
+						cleanedUvs.Add(uv);
+					}
 					verts.Add(vnc, newIndex);
 					indexmap.Add(i, newIndex);
                 }

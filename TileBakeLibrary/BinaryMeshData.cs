@@ -178,7 +178,7 @@ namespace TileBakeLibrary.BinaryMesh
                     subobject.vertices.Add(ConvertVertex(mesh.vertices[i + identifier.startVertex]));
                     subobject.normals.Add(ConvertNormalFromBinary(mesh.normals[i + identifier.startVertex]));
 
-                    if(subobject.uvs.Count > 0)
+                    if(mesh.uvs.Count > 0)
                         subobject.uvs.Add(mesh.uvs[i + identifier.startVertex]);
                 }
 
