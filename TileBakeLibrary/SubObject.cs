@@ -85,7 +85,7 @@ namespace TileBakeLibrary
             }
 
 			if(vertices.Count != cleanedVertices.Count)
-				Console.WriteLine($"Removed doubles: {vertices.Count} -> {cleanedVertices.Count}");
+				Console.WriteLine($"Doubles removed: {vertices.Count - cleanedVertices.Count}");
 
 			vertices = cleanedVertices;
 			normals = cleanedNormals;
@@ -135,6 +135,7 @@ namespace TileBakeLibrary
 				triangleIndices.Add(mapV[t[2]]);
 			}
 			mesh = null;
+
 			MergeSimilarVertices();
 		}
 
