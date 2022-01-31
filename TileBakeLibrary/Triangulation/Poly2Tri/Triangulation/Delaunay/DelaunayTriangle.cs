@@ -103,7 +103,7 @@ namespace Poly2Tri
             int i = EdgeIndex(p1, p2);
             if (i == -1)
             {
-                throw new Exception("Error marking neighbors -- t doesn't contain edge p1-p2!");
+                //Error marking neighbors -- t doesn't contain edge p1-p2!
             }
             Neighbors[i] = t;
         }
