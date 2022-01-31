@@ -26,6 +26,7 @@ namespace TileBakeLibrary
 		/// <summary>
 		/// Angle in degrees
 		/// </summary>
+		public static float vertexDistanceComparisonThreshold = 0.1f; //1mm
 		public static float normalAngleComparisonThreshold = 5.0f;
 
 		public Vector3 normal;
@@ -36,10 +37,9 @@ namespace TileBakeLibrary
 			this.normal = normal;
 		}
 
-
 		public bool Equals(VertexNormalCombination other)
         {
-			if (other.vertex == vertex)
+			if (Vector3Double.Distance(other.vertex,vertex) < vertexDistanceComparisonThreshold)
             {
 				if (AngleBetweenNormals(normal, other.normal) < normalAngleComparisonThreshold)
 				{
