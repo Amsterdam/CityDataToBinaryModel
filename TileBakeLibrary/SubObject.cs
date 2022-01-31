@@ -38,6 +38,7 @@ namespace TileBakeLibrary
 		private double distanceMergeThreshold = 0.01;
 		private DMesh3 mesh;
 		public float maxVerticesPerSquareMeter;
+
 		public void MergeSimilarVertices(float mergeVerticesBelowNormalAngle)
 		{
 			List<Vector3Double> cleanedVertices = new List<Vector3Double>();
@@ -46,7 +47,8 @@ namespace TileBakeLibrary
 			
 			Vector3Double vertex;
 			Vector3 normal;
-			int oldIndex =0;
+			Vector2 uv = new Vector2(0,0);
+			int oldIndex = 0;
 			int newIndex = 0;
 			Dictionary< vertexNormalCombination,int> verts = new Dictionary<vertexNormalCombination,int>();
 			Dictionary<int, int> indexmap = new Dictionary<int, int>(); // old index --> new index
@@ -55,12 +57,22 @@ namespace TileBakeLibrary
 				oldIndex = triangleIndices[i];
 				vertex = vertices[oldIndex];
 				normal = normals[oldIndex];
+
+				if (uvs.Count > 0 && uvs.Count == vertices.Count)
+				{
+					uv = uvs[oldIndex];
+				}
+
 				vertexNormalCombination vnc = new vertexNormalCombination(vertex, normal);
                 if (!verts.ContainsKey(vnc))
                 {
 					newIndex = cleanedVertices.Count();
 					cleanedNormals.Add(normal);
 					cleanedVertices.Add(vertex);
+					if (uvs.Count > 0 && uvs.Count == vertices.Count)
+					{
+						cleanedUvs.Add(uv);
+					}
 					verts.Add(vnc, newIndex);
 					indexmap.Add(i, newIndex);
                 }
@@ -73,9 +85,8 @@ namespace TileBakeLibrary
             }
 			vertices = cleanedVertices;
 			normals = cleanedNormals;
-
-
-        }
+			uvs = cleanedUvs;
+		}
 
 		private int GetOrAddVertexIndex(int vertexIndex, List<Vector3Double> cleanedVertices, List<Vector3> cleanedNormals, List<Vector2> cleanedUvs, float angleThreshold)
 		{
@@ -195,14 +206,11 @@ namespace TileBakeLibrary
             if (mesh.VertexCount > maxSurfaceCount)
             {
                 r.ReduceToVertexCount(maxSurfaceCount);
-
             }
 
-           mesh = r.Mesh;
+			mesh = r.Mesh;
 
 			saveMesh();
-
-
 		}
 
 		public void ClipSpikes(float ceiling, float floor)

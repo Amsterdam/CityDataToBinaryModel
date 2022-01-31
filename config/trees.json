@@ -1,0 +1,21 @@
+{
+	"sourceFolder":"C:/Projects/GemeenteAmsterdam/Docs/Blender/BomenNaarCityJSON/OutputCityJSON/",
+	"outputFolder": "C:/Projects/GemeenteAmsterdam/Docs/Blender/BomenNaarCityJSON/OutputBin/trees_",
+	"replaceExistingObjects":true,
+	"identifier":"identificatie",
+	"removePartOfIdentifier":"",
+	"exportUVCoordinates":true,
+	"lod":1,
+	"tilingMethod":"OVERLAP",
+	"removeSpikes":false,
+	"removeSpikesAbove": 25,
+	"removeSpikesBelow": -10,
+	"brotliCompression":true,
+	"cityObjectFilters":[
+		{
+			"objectType":"SolitaryVegetationObject",
+			"defaultSubmeshIndex":0,
+			"attributeFilters":[]
+		}
+	]
+}

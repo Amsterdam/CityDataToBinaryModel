@@ -30,7 +30,7 @@ namespace TileBakeLibrary
 {
 	class GltfWrapper
 	{
-		private const int dataSlots = 2; //POSITION and NORMAL for now. TEXCOORD_0 would add 1 more if we add UV's
+		private const int dataSlots = 3; //POSITION , NORMAL and TEXCOORD_0
 		private const int skipBelowVertices = 3;
 
 		public static void Save(MeshData mesh, string filename, string binaryFilename)
@@ -108,7 +108,7 @@ namespace TileBakeLibrary
 			var normalsLength = mesh.normalsCount * 3 * 4; //3 (xyz) * 4 float bytes
 
 			var uvsByteOffset = normalsByteOffset +  normalsLength;
-			var uvsLength = 0 * 2 * 4; //3 (xy) * 4 float bytes
+			var uvsLength = mesh.uvCount * 2 * 4; //3 (xy) * 4 float bytes
 
 			var indicesByteOffset = uvsByteOffset +  uvsLength;
 			var indicesLength = 0;
@@ -128,8 +128,17 @@ namespace TileBakeLibrary
 				byteLength = normalsLength,
 				byteOffset = normalsByteOffset
 			};
+			var uvsView = new Bufferview()
+			{
+				buffer = 0,
+				byteLength = uvsLength,
+				byteOffset = uvsByteOffset
+			};
 			bufferViews.Add(verticesView);
 			bufferViews.Add(normalsView);
+
+			if(mesh.uvCount>0)
+				bufferViews.Add(uvsView);
 
 			//Now a unique indices view per submesh
 			for (int i = 0; i < mesh.submeshes.Count; i++)
@@ -173,8 +182,20 @@ namespace TileBakeLibrary
 				count = mesh.normalsCount,
 				type = "VEC3"
 			};
+			var uvs = new Accessor()
+			{
+				bufferView = 2,
+				componentType = 5126,
+				count = mesh.uvCount,
+				type = "VEC2"
+			};
 			accessors.Add(vertices);
 			accessors.Add(normals);
+
+			if(mesh.uvCount > 0)
+				accessors.Add(uvs);
+
+			var currentAccessorsOffset = accessors.Count;
 
 			//And add a unique accessor per submesh (if they have triangles)
 			var subMeshWithDataIndex = 0;
@@ -185,7 +206,7 @@ namespace TileBakeLibrary
 					var submesh = mesh.submeshes[i];
 					var indices = new Accessor()
 					{
-						bufferView = 2 + subMeshWithDataIndex,
+						bufferView = currentAccessorsOffset + subMeshWithDataIndex,
 						componentType = 5125,
 						count = submesh.indexcount,
 						type = "SCALAR"
@@ -225,9 +246,10 @@ namespace TileBakeLibrary
 								{
 									attributes = new Attributes(){
 										POSITION=0,
-										NORMAL=1
+										NORMAL=1,
+										TEXCOORD_0 = (mesh.uvCount > 0) ? 2 : null
 									},
-									indices=nodeMeshIndex+dataSlots
+									indices=nodeMeshIndex+((mesh.uvCount > 0) ? 3 : 2)
 								}
 						}
 					};

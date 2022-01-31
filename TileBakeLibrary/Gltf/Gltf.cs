@@ -64,6 +64,7 @@ namespace Netherlands3D.Gltf
 	{
 		public int POSITION { get; set; }
 		public int NORMAL { get; set; }
+		public int? TEXCOORD_0 { get; set; }
 	}
 
 	public class Accessor

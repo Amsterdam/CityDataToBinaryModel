@@ -54,7 +54,6 @@ namespace Netherlands3D.CityJSON
 
 			//Get vertices
 			Console.Write("\r reading vertices");
-			//vertices = new Vector3Double[];
 			textureVertices = new List<Vector2>();
 			Textures = new List<Surfacetexture>();
 
@@ -72,7 +71,6 @@ namespace Netherlands3D.CityJSON
 			) : new Vector3Double(0, 0, 0);
 
 			//now load all the vertices with the scaler and offset applied
-			
 			vertices = new Vector3Double[cityJsonNode["vertices"].Count];
 			int counter = 0;
 			foreach (JSONNode node in cityJsonNode["vertices"])
@@ -400,7 +398,7 @@ namespace Netherlands3D.CityJSON
 					UVs.Add(textureVertices[vectornode.AsInt]);
 				}
 			}
-			UVs.Reverse();
+			//UVs.Reverse();
 			surf.outerringUVs = UVs;
 
 			//inner rings
@@ -416,7 +414,7 @@ namespace Netherlands3D.CityJSON
 					}
 					counter++;
 				}
-				UVs.Reverse();
+				//UVs.Reverse();
 				surf.innerringUVs.Add(UVs);
 			}
 			return surf;

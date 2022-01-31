@@ -51,6 +51,8 @@ namespace TileBakeLibrary
 
 		private bool addToExistingTiles = false;
 
+		private bool exportUVCoordinates = false;
+
 		private float lod = 0;
 		private string filterType = "";
 
@@ -132,6 +134,11 @@ namespace TileBakeLibrary
 		public void SetReplace(bool replace)
 		{
 			this.replaceExistingIDs = replace;
+		}
+
+		public void SetExportUV(bool exportUV)
+		{
+			this.exportUVCoordinates = exportUV;
 		}
 
 		/// <summary>
@@ -315,7 +322,7 @@ namespace TileBakeLibrary
 					BinaryMeshData bmd = new BinaryMeshData();
 					if (tile.filePath.Contains("NaN") == false)
 					{
-						bmd.ExportData(tile);
+						bmd.ExportData(tile, exportUVCoordinates);
 
 						//Optionaly write other format(s) for previewing purposes
 						if (createOBJFiles) OBJWriter.Save(tile);
@@ -377,12 +384,8 @@ namespace TileBakeLibrary
 		{
 			List<SubObject> filteredObjects = new List<SubObject>();
 			Console.WriteLine("");
-			// Console.WriteLine($"Parsing CityJSON {filecounter} of {totalFiles}: {sourceFile}");
-			// Console.Write("loading file...");
-
 
 			Console.Write("\r reading cityobjects");
-			//List<CityObject> cityObjects = cityJson.LoadCityObjects(lod);
 			int cityObjectCount = cityJson.CityObjectCount();
 			Console.WriteLine($"\r CityObjects found: {cityObjectCount}");
 			Console.Write("---");
@@ -465,8 +468,6 @@ namespace TileBakeLibrary
 
 				 Interlocked.Increment(ref done);
 				 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-
-
 			 }
 			);
 
@@ -517,7 +518,6 @@ namespace TileBakeLibrary
 			{
 				return null;
 			}
-
 
 			//If we supplied a specific identifier field, use it as ID instead of object key index
 			if (identifier != "")
@@ -570,12 +570,13 @@ namespace TileBakeLibrary
 			Vector3 defaultNormal = new Vector3(0, 1, 0);
 			List<Vector3> defaultnormalList = new List<Vector3> { defaultNormal, defaultNormal, defaultNormal };
 			List<Vector3> normallist = new List<Vector3>();
+			List<Vector2> uvsList = new List<Vector2>();
 			List<int> indexlist = new List<int>();
+
 			int count = subObject.vertices.Count;
 			foreach (var surface in cityObject.surfaces)
 			{
 				//findout if ity is already a triangle
-
 				if (surface.outerRing.Count == 3 && surface.innerRings.Count == 0)
 				{
 					count = vertexlist.Count + subObject.vertices.Count;
@@ -583,6 +584,7 @@ namespace TileBakeLibrary
 					count += 3;
 					indexlist.AddRange(newindices);
 					vertexlist.AddRange(surface.outerRing);
+					uvsList.AddRange(surface.outerringUVs);
 					if (calculateNormals)
 					{
 						Vector3 normal = CalculateNormal(surface.outerRing[0], surface.outerRing[1], surface.outerRing[2]);
@@ -619,14 +621,27 @@ namespace TileBakeLibrary
 					{
 						inner.Add((Vector3)(surface.innerRings[i][j] - offsetPolygons));
 					}
-
 					holes.Add(inner);
+				}
+
+				//Uv's
+				List<Vector2> outsideUvs = new List<Vector2>();
+				List<List<Vector2>> holeUvs = new List<List<Vector2>>();
+				for (int i = 0; i < surface.outerringUVs.Count; i++)
+				{
+					outsideUvs.Add(surface.outerringUVs[i]);
+				}
+				for (int i = 0; i < surface.innerringUVs.Count; i++)
+				{
+					holeUvs.Add(surface.innerringUVs[i]);
 				}
 
 				//Turn poly into triangulated geometry data
 				Poly2Mesh.Polygon poly = new Poly2Mesh.Polygon();
 				poly.outside = outside;
 				poly.holes = holes;
+				poly.outsideUVs = outsideUvs;
+				poly.holesUVs = holeUvs;
 
 				if (poly.outside.Count < 3)
 				{
@@ -645,7 +660,9 @@ namespace TileBakeLibrary
 					normallist.Add(surfaceNormals[j]);
 
 					if (surfaceUvs != null)
-						subObject.uvs.Add(surfaceUvs[j]);
+					{
+						uvsList.Add(surfaceUvs[j]);
+					}
 				}
 
 				//Append indices ( corrected to offset )
@@ -660,6 +677,7 @@ namespace TileBakeLibrary
 				subObject.vertices.AddRange(vertexlist);
 				subObject.triangleIndices.AddRange(indexlist);
 				subObject.normals.AddRange(normallist);
+				subObject.uvs.AddRange(uvsList);
 			}
 		}
 

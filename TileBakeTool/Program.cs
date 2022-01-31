@@ -41,6 +41,7 @@ namespace TileBakeTool
 		private static bool createBrotliCompressedFiles = false;
 		private static bool createObjFiles = false;
 
+		private static bool exportUVCoordinates = false;
 		private static float lod = 0;
 		private static string filterType = "";
 
@@ -119,7 +120,8 @@ namespace TileBakeTool
 				replaceExistingIDs = configFile.replaceExistingObjects;
 				identifier = configFile.identifier;
 				removeFromIdentifier = configFile.removePartOfIdentifier;
-				if(configFile.lod != 0.0f) lod = configFile.lod;
+				exportUVCoordinates = configFile.exportUVCoordinates;
+				if (configFile.lod != 0.0f) lod = configFile.lod;
 				createBrotliCompressedFiles = configFile.brotliCompression;
 
 				sliceGeometry = (configFile.tilingMethod == "SLICED"); //TILED or SLICED
@@ -187,6 +189,7 @@ namespace TileBakeTool
 			tileBaker.SetFilterType(filterType);
 			tileBaker.SetID(identifier, removeFromIdentifier);
 			tileBaker.SetReplace(replaceExistingIDs);
+			tileBaker.SetExportUV(exportUVCoordinates);
 			tileBaker.CreateOBJ(createObjFiles);
 			tileBaker.AddBrotliCompressedFile(createBrotliCompressedFiles);
 			

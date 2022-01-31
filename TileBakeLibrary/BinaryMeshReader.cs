@@ -45,7 +45,7 @@ namespace TileBakeLibrary
                     var normalsCount = reader.ReadInt32();
                     mesh.normalsCount = normalsCount;
                     var uvCount = reader.ReadInt32();
-                    mesh.uvCount = normalsCount;
+                    mesh.uvCount = uvCount;
                     var indicescount = reader.ReadInt32();
                     mesh.indexCount = indicescount;
                     var submeshcount = reader.ReadInt32();

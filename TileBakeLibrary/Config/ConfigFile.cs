@@ -22,14 +22,16 @@ public class ConfigFile
 	public bool replaceExistingObjects { get; set; }
 	public string identifier { get; set; }
 	public string removePartOfIdentifier { get; set; }
+	public bool exportUVCoordinates { get; set; }
 	public float lod { get; set; }
 	public string tilingMethod { get; set; }
 
-	public int tileSize = 1000;
-	public bool brotliCompression { get; set; }
-	public bool removeSpikes { get; set; }
-	public float removeSpikesAbove { get; set; }
-	public float removeSpikesBelow { get; set; }
+	//Optional settings with default values
+	public int tileSize { get; set; } = 1000;
+	public bool brotliCompression { get; set; } = false;
+	public bool removeSpikes { get; set; } = false;
+	public float removeSpikesAbove { get; set; } = 25;
+	public float removeSpikesBelow { get; set; } = -10;
 	public CityObjectFilter[] cityObjectFilters { get; set; }
 }
 

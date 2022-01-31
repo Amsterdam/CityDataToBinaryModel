@@ -36,8 +36,9 @@ namespace TileBakeLibrary.BinaryMesh
         /// <summary>
         /// export data from a tile to a binaryMesh an a binary data mesh
         /// </summary>
-        /// <param name="tile"></param>
-        public void ExportData(Tile tile)
+        /// <param name="tile">Tile containing cityobjects</param>
+        /// /// <param name="exportUVs">Export UV coordinates. UV length is 0 if not exported</param>
+        public void ExportData(Tile tile, bool exportUVs = false)
         {
             origin = tile.position;
             tileSize = tile.size;
@@ -80,10 +81,20 @@ namespace TileBakeLibrary.BinaryMesh
                     {
                         mesh.vertices.Add(ConvertVertex(subobject.vertices[i]));
                         mesh.normals.Add(ConvertNormaltoBinary(subobject.normals[i]));
+                        
+                    }
+
+                    if (exportUVs)
+                    {
+                        //optional uvs
+                        for (int i = 0; i < subobject.uvs.Count; i++)
+                        {
+                            mesh.uvs.Add(subobject.uvs[i]);
+                        }
                     }
 
                     // offset the indices with the value of startvertex and add to the mesh
-                    // reverse the triaqngleIndices to male it lefthanded
+                    // reverse the triaqngleIndices to make it lefthanded
                     subobject.triangleIndices.Reverse();
 
                     for (int i = 0; i < subobject.triangleIndices.Count; i++)
@@ -103,6 +114,7 @@ namespace TileBakeLibrary.BinaryMesh
             }
             mesh.vertexCount = mesh.vertices.Count;
             mesh.normalsCount = mesh.normals.Count;
+            mesh.uvCount = mesh.uvs.Count;
             mesh.indexCount = mesh.indices.Count;
 
             //write bin-file
@@ -121,7 +133,7 @@ namespace TileBakeLibrary.BinaryMesh
         {
             return new Vector3(normal.X, normal.Z, normal.Y);
         }
-        private Vector3 ConvertNormalFormBinary(Vector3 normal)
+        private Vector3 ConvertNormalFromBinary(Vector3 normal)
         {
             return new Vector3(normal.X, normal.Z, normal.Y);
         }
@@ -159,17 +171,23 @@ namespace TileBakeLibrary.BinaryMesh
                 SubObject subobject = new SubObject();
                 subobject.id = identifier.objectID;
                 subobject.parentSubmeshIndex = identifier.submeshIndex;
+
                 // get normals and vertices
                 for (int i = 0; i < identifier.vertexLength; i++)
                 {
                     subobject.vertices.Add(ConvertVertex(mesh.vertices[i + identifier.startVertex]));
-                    subobject.normals.Add(ConvertNormalFormBinary(mesh.normals[i + identifier.startVertex]));
+                    subobject.normals.Add(ConvertNormalFromBinary(mesh.normals[i + identifier.startVertex]));
+
+                    if(mesh.uvs.Count > 0)
+                        subobject.uvs.Add(mesh.uvs[i + identifier.startVertex]);
                 }
+
                 // get indices
                 for (int i = 0; i < identifier.indicesLength; i++)
                 {
                     subobject.triangleIndices.Add(mesh.indices[i + identifier.startIndex]-identifier.startVertex);
                 }
+
                 // reverse the triaqngleIndices to make it righthanded
                 subobject.triangleIndices.Reverse();
                 tile.AddSubObject(subobject, false);
