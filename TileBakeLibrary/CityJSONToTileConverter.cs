@@ -407,83 +407,88 @@ namespace TileBakeLibrary
 			int parsing = 0;
 			int simplifying = 0;
 			int tiling = 0;
-			var filterobjectsBucket = new ConcurrentBag<SubObject>();
+			var filterObjectsBucket = new ConcurrentBag<SubObject>();
 			int[] indices = Enumerable.Range(0, cityObjectCount).ToArray(); ;
 			//Turn cityobjects (and their children) into SubObject mesh data
 			var partitioner = Partitioner.Create(indices, EnumerablePartitionerOptions.NoBuffering);
 			Parallel.ForEach(partitioner, i =>
-			 {
-				 Interlocked.Increment(ref parsing);
-				 CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
-				 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-				 var subObject = ToSubObjectMeshData(cityObject);
-				 //cityJson.ClearCityObject(cityObject.keyName);
-				 cityObject = null;
-				 Interlocked.Decrement(ref parsing);
+			{
+				Interlocked.Increment(ref parsing);
+				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
+				WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+				var subObject = ToSubObjectMeshData(cityObject);
+				//cityJson.ClearCityObject(cityObject.keyName);
+				cityObject = null;
+				Interlocked.Decrement(ref parsing);
 
-				 cityObject = null;
-				 if (subObject == null)
-				 {
-					 Interlocked.Increment(ref done);
-					 Interlocked.Increment(ref skipped);
-					 return;
-				 }
-				 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
+				cityObject = null;
+				if (subObject == null)
+				{
+					Interlocked.Increment(ref done);
+					Interlocked.Increment(ref skipped);
+					return;
+				}
+				WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
 
-				 if (subObject.maxVerticesPerSquareMeter > 0)
-				 {
-					 Interlocked.Increment(ref simplifying);
-					 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-					 subObject.SimplifyMesh();
-					 Interlocked.Decrement(ref simplifying);
-					 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-				 }
-				 else
-				 {
-					 if (VertexNormalCombination.normalAngleComparisonThreshold != 0)
-					 {
-						 subObject.MergeSimilarVertices();
-					 }
-				 }
-				 if (clipSpikes)
-				 {
-					 subObject.ClipSpikes(spikeCeiling, spikeFloor);
-				 }
+				if (subObject.maxVerticesPerSquareMeter > 0)
+				{
+					Interlocked.Increment(ref simplifying);
+					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+					subObject.SimplifyMesh();
+					Interlocked.Decrement(ref simplifying);
+					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+				}
+				else
+				{
+					if (VertexNormalCombination.normalAngleComparisonThreshold != 0)
+					{
+						subObject.MergeSimilarVertices();
+					}
+				}
+				if (clipSpikes)
+				{
+					subObject.ClipSpikes(spikeCeiling, spikeFloor);
+				}
 
-				 if (TilingMethod == "TILED")
-				 {
-					 Interlocked.Increment(ref tiling);
-					 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-					 var newSubobjects = subObject.ClipSubobject(new Vector2(tileSize, tileSize));
-					 if (newSubobjects.Count == 0)
-					 {
-						 subObject.CalculateNormals();
-						 filterobjectsBucket.Add(subObject);
-					 }
-					 else
-					 {
-						 foreach (var newsubObject in newSubobjects)
-						 {
-							 if (newsubObject != null)
-							 {
-								 filterobjectsBucket.Add(newsubObject);
-							 }
-						 }
-					 }
-					 Interlocked.Decrement(ref tiling);
-					 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-				 }
-				 else
-				 {
-					 filterobjectsBucket.Add(subObject);
-				 }
+				if (TilingMethod == "TILED")
+				{
+					Interlocked.Increment(ref tiling);
+					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+					var newSubobjects = subObject.ClipSubobject(new Vector2(tileSize, tileSize));
+					if (newSubobjects.Count == 0)
+					{
+						subObject.CalculateNormals();
+						filterObjectsBucket.Add(subObject);
+					}
+					else
+					{
+						foreach (var newsubObject in newSubobjects)
+						{
+							if (newsubObject != null)
+							{
+								filterObjectsBucket.Add(newsubObject);
+							}
+						}
+					}
+					Interlocked.Decrement(ref tiling);
+					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+				}
+				else
+				{
+					filterObjectsBucket.Add(subObject);
+				}
 
-				 Interlocked.Increment(ref done);
-				 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-			 }
+				Interlocked.Increment(ref done);
+				WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+			}
 			);
 
-			return filterobjectsBucket.ToList();
+			return filterObjectsBucket.ToList();
+		}
+
+		private static void WriteStatusToConsole(int skipped, int done, int parsing, int simplifying, int tiling)
+		{
+			Console.Write("\r" + done + " done; " + skipped + " skipped; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling;");
 		}
 
 		private SubObject ToSubObjectMeshData(CityObject cityObject)
