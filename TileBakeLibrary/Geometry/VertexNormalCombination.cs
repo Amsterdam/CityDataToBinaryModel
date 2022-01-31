@@ -36,16 +36,11 @@ namespace TileBakeLibrary
 			this.normal = normal;
 		}
 
-		/// <summary>
-		/// Check if the vertex position is the same and the normals within the threshold angle
-		/// </summary>
-		/// <param name="other"></param>
-		/// <returns></returns>
 		public bool Equals(VertexNormalCombination other)
         {
 			if (other.vertex == vertex)
-            {		
-				if (AngleBetweenNormals(normal,other.normal) < normalAngleComparisonThreshold)
+            {
+				if (AngleBetweenNormals(normal, other.normal) < normalAngleComparisonThreshold)
 				{
 					return true;
 				}
