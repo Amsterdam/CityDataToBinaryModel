@@ -36,6 +36,7 @@ namespace TileBakeLibrary
 			this.normal = normal;
 		}
 
+
 		public bool Equals(VertexNormalCombination other)
         {
 			if (other.vertex == vertex)

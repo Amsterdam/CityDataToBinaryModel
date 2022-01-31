@@ -17,6 +17,7 @@
 */
 public class ConfigFile
 {
+	//Mandatory settings. The application should not start without them specified by the user:
 	public string sourceFolder { get; set; }
 	public string outputFolder { get; set; }
 	public bool replaceExistingObjects { get; set; }
@@ -26,13 +27,15 @@ public class ConfigFile
 	public float lod { get; set; }
 	public string tilingMethod { get; set; }
 
-	//Optional settings with default values
+
+	//Optional settings with predefined default values:
 	public int tileSize { get; set; } = 1000;
 	public float mergeVerticesBelowAngle { get; set; } = 5;
 	public bool brotliCompression { get; set; } = false;
 	public bool removeSpikes { get; set; } = false;
 	public float removeSpikesAbove { get; set; } = 25;
 	public float removeSpikesBelow { get; set; } = -10;
+
 	public CityObjectFilter[] cityObjectFilters { get; set; }
 }
 

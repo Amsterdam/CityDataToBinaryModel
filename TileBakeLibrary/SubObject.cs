@@ -45,47 +45,48 @@ namespace TileBakeLibrary
 			List<Vector3Double> cleanedVertices = new List<Vector3Double>();
 			List<Vector3> cleanedNormals = new List<Vector3>();
 			List<Vector2> cleanedUvs = new List<Vector2>();
-			
+
 			Vector3Double vertex;
 			Vector3 normal;
 			Vector2 uv = new Vector2(0,0);
 			int oldIndex = 0;
 			int newIndex = 0;
 
-			Dictionary<VertexNormalCombination,int> verts = new Dictionary<VertexNormalCombination,int>();
-			Dictionary<int, int> indexmap = new Dictionary<int, int>(); // old index --> new index
+			Dictionary<VertexNormalCombination,int> vertexNormalCombinations = new Dictionary<VertexNormalCombination,int>();
             for (int i = 0; i < triangleIndices.Count; i++)
             {
 				oldIndex = triangleIndices[i];
+
 				vertex = vertices[oldIndex];
 				normal = normals[oldIndex];
-
 				if (uvs.Count > 0 && uvs.Count == vertices.Count)
 				{
 					uv = uvs[oldIndex];
 				}
 
-				VertexNormalCombination vnc = new VertexNormalCombination(vertex, normal);
-                if (!verts.ContainsKey(vnc))
+				VertexNormalCombination vertexNormalCombination = new VertexNormalCombination(vertex, normal);
+                if (!vertexNormalCombinations.ContainsKey(vertexNormalCombination))
                 {
-					//Check if there is a similar normal there
-					newIndex = cleanedVertices.Count();
-					cleanedNormals.Add(normal);
+					newIndex = cleanedVertices.Count;
+
 					cleanedVertices.Add(vertex);
+					cleanedNormals.Add(normal);
 					if (uvs.Count > 0 && uvs.Count == vertices.Count)
 					{
 						cleanedUvs.Add(uv);
 					}
-					verts.Add(vnc, newIndex);
-					indexmap.Add(i, newIndex);
+					vertexNormalCombinations.Add(vertexNormalCombination, newIndex);
                 }
                 else
                 {
-					newIndex = verts[vnc];
-					indexmap.Add(i, newIndex);
+					newIndex = vertexNormalCombinations[vertexNormalCombination];
 				}
 				triangleIndices[i] = newIndex;
             }
+
+			if(vertices.Count != cleanedVertices.Count)
+				Console.WriteLine($"Removed doubles: {vertices.Count} -> {cleanedVertices.Count}");
+
 			vertices = cleanedVertices;
 			normals = cleanedNormals;
 			uvs = cleanedUvs;

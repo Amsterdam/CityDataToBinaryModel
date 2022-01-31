@@ -73,6 +73,7 @@ namespace TileBakeLibrary
 		/// <param name="mergeVerticesBelowNormalAngle">Angle in degrees.</param>
 		public void SetVertexMergeAngleThreshold(float mergeVerticesBelowNormalAngle)
 		{
+			Console.WriteLine($"Merging vertices with normal angle threshold: {mergeVerticesBelowNormalAngle}");
 			VertexNormalCombination.normalAngleComparisonThreshold = mergeVerticesBelowNormalAngle;
 		}
 
