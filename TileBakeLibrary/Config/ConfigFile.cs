@@ -28,6 +28,7 @@ public class ConfigFile
 
 	//Optional settings with default values
 	public int tileSize { get; set; } = 1000;
+	public float mergeVerticesBelowAngle { get; set; } = 5;
 	public bool brotliCompression { get; set; } = false;
 	public bool removeSpikes { get; set; } = false;
 	public float removeSpikesAbove { get; set; } = 25;

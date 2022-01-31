@@ -36,10 +36,11 @@ namespace TileBakeLibrary
 		public string id = "";
 
 		private double distanceMergeThreshold = 0.01;
+
 		private DMesh3 mesh;
 		public float maxVerticesPerSquareMeter;
 
-		public void MergeSimilarVertices(float mergeVerticesBelowNormalAngle)
+		public void MergeSimilarVertices()
 		{
 			List<Vector3Double> cleanedVertices = new List<Vector3Double>();
 			List<Vector3> cleanedNormals = new List<Vector3>();
@@ -50,7 +51,8 @@ namespace TileBakeLibrary
 			Vector2 uv = new Vector2(0,0);
 			int oldIndex = 0;
 			int newIndex = 0;
-			Dictionary< vertexNormalCombination,int> verts = new Dictionary<vertexNormalCombination,int>();
+
+			Dictionary<VertexNormalCombination,int> verts = new Dictionary<VertexNormalCombination,int>();
 			Dictionary<int, int> indexmap = new Dictionary<int, int>(); // old index --> new index
             for (int i = 0; i < triangleIndices.Count; i++)
             {
@@ -63,9 +65,10 @@ namespace TileBakeLibrary
 					uv = uvs[oldIndex];
 				}
 
-				vertexNormalCombination vnc = new vertexNormalCombination(vertex, normal);
+				VertexNormalCombination vnc = new VertexNormalCombination(vertex, normal);
                 if (!verts.ContainsKey(vnc))
                 {
+					//Check if there is a similar normal there
 					newIndex = cleanedVertices.Count();
 					cleanedNormals.Add(normal);
 					cleanedVertices.Add(vertex);
@@ -88,49 +91,9 @@ namespace TileBakeLibrary
 			uvs = cleanedUvs;
 		}
 
-		private int GetOrAddVertexIndex(int vertexIndex, List<Vector3Double> cleanedVertices, List<Vector3> cleanedNormals, List<Vector2> cleanedUvs, float angleThreshold)
-		{
-			bool hasnormals = true;
-            if (cleanedNormals.Count==0)
-            {
-				hasnormals = false;
-            }
-			Vector3Double inputVertex = vertices[vertexIndex];
-			Vector3 inputNormal = normals[vertexIndex];
-			
-			//Vector2 inputUv = uvs[index]; //When we support uv's, a vertex with a unique UV should not be merged and be added as a unique one
-
-			//Find vertex on a similar threshold position, and then normal
-			for (int i = 0; i < cleanedVertices.Count; i++)
-			{
-				var cleanedVertex = cleanedVertices[i];
-				var distance = Vector3Double.Distance(inputVertex, cleanedVertex);
-				if(distance < distanceMergeThreshold)
-				{
-                    if (!hasnormals)
-                    {
-						return i;
-                    }
-					//Compare the normal using a threshold
-					var cleanedVertNormal = cleanedNormals[i];
-					if (Vector3.Dot(inputNormal, cleanedVertNormal) >= angleThreshold)
-					{
-						//Similar enough normal reuse existing vert
-						return i;
-					}
-				}
-			}
-
-			cleanedVertices.Add(inputVertex);
-			cleanedNormals.Add(inputNormal);
-			return cleanedVertices.Count - 1;
-		}
-
-
-		private void createMesh()
+		private void CreateMesh()
         {
 			mesh = new DMesh3(false, false, false, false);
-
 			
 			for (int i = 0; i < vertices.Count; i++)
 			{
@@ -144,7 +107,7 @@ namespace TileBakeLibrary
 			MeshNormals.QuickCompute(mesh);
 		}
 
-		private void saveMesh()
+		private void SaveMesh()
         {
 			vertices.Clear();
 			WriteMesh outputMesh = new WriteMesh(mesh);
@@ -171,17 +134,15 @@ namespace TileBakeLibrary
 				triangleIndices.Add(mapV[t[2]]);
 			}
 			mesh = null;
-			MergeSimilarVertices(2);
+			MergeSimilarVertices();
 		}
 
 		public void SimplifyMesh()
         {
             if (mesh == null)
             {
-				createMesh();
+				CreateMesh();
             }
-
-			//MergeSimilarVertices(50);
 			
 			MeshNormals.QuickCompute(mesh);
             MergeCoincidentEdges merg = new MergeCoincidentEdges(mesh);
@@ -192,12 +153,11 @@ namespace TileBakeLibrary
             //}
 
             // setup up the reducer
-            Reducer r = new Reducer(mesh);
+            Reducer reducer = new Reducer(mesh);
             // set reducer to preserve bounds
 
-            r.SetExternalConstraints(new MeshConstraints());
-            MeshConstraintUtil.FixAllBoundaryEdges(r.Constraints, mesh);
-
+            reducer.SetExternalConstraints(new MeshConstraints());
+            MeshConstraintUtil.FixAllBoundaryEdges(reducer.Constraints, mesh);
 
 			int edgecount = mesh.BoundaryEdgeIndices().Count(p=>p>-1);
 			double area = MeshMeasurements.AreaT(mesh, mesh.TriangleIndices());
@@ -205,12 +165,12 @@ namespace TileBakeLibrary
             int maxSurfaceCount = (int)(area* maxVerticesPerSquareMeter) +edgecount;
             if (mesh.VertexCount > maxSurfaceCount)
             {
-                r.ReduceToVertexCount(maxSurfaceCount);
+                reducer.ReduceToVertexCount(maxSurfaceCount);
             }
 
-			mesh = r.Mesh;
+			mesh = reducer.Mesh;
 
-			saveMesh();
+			SaveMesh();
 		}
 
 		public void ClipSpikes(float ceiling, float floor)
@@ -221,7 +181,6 @@ namespace TileBakeLibrary
 				// no spikes detected
 				return;
 			}
-
 
 			double averageHeight = (ceiling + floor) / 2;
 			
@@ -243,11 +202,10 @@ namespace TileBakeLibrary
             }
 		}
 
-
-		public List<SubObject> clipSubobject(Vector2 size)
+		public List<SubObject> ClipSubobject(Vector2 size)
         {
 			List<SubObject> subObjects = new List<SubObject>();
-			createMesh();
+			CreateMesh();
 			var bounds = MeshMeasurements.Bounds(mesh, null);
 			// find the coordinates of the tile-borders around the object
 			int rdXmin = (int)Math.Floor(bounds.Min.x/size.X)*(int)size.X;
@@ -269,13 +227,13 @@ namespace TileBakeLibrary
 				int localYmax = (int)Math.Ceiling(localbounds.Max.y / size.Y) * (int)size.Y; ;
                 if (localYmax-localYmin==(int)size.Y)
                 {
-					subObjects.Add(createSubobjectFromMesh(columnMesh,x,localYmin,(int)size.Y));
+					subObjects.Add(CreateSubobjectFromMesh(columnMesh,x,localYmin,(int)size.Y));
                 }
 				else
 				{ 
                 for (int y = localYmin; y < localYmax; y += (int)size.Y)
                 {
-                    SubObject newSubobject = clipMesh(columnMesh, x, y,size.Y);
+                    SubObject newSubobject = ClipMesh(columnMesh, x, y,size.Y);
                     if (newSubobject != null)
                     {
 
@@ -289,7 +247,7 @@ namespace TileBakeLibrary
             return subObjects;
 		}
 
-		private SubObject createSubobjectFromMesh(DMesh3 mesh,int x,int y,int size)
+		private SubObject CreateSubobjectFromMesh(DMesh3 mesh,int x,int y,int size)
         {
 			//create new subobject
 			SubObject subObject = new SubObject();
@@ -298,7 +256,7 @@ namespace TileBakeLibrary
 			subObject.id = id;
 			subObject.parentSubmeshIndex = parentSubmeshIndex;
 			subObject.mesh = mesh;
-			subObject.saveMesh();
+			subObject.SaveMesh();
 
 			return subObject;
 		}
@@ -327,7 +285,7 @@ namespace TileBakeLibrary
 			//cut off the top
 		}
 
-		private SubObject clipMesh(DMesh3 columnMesh, int X, int Y, float tileSize)
+		private SubObject ClipMesh(DMesh3 columnMesh, int X, int Y, float tileSize)
         {
 			SubObject subObject; 
 			DMesh3 clippedMesh = new DMesh3(false, false, false, false);
@@ -360,7 +318,7 @@ namespace TileBakeLibrary
 				subObject.id = id;
 				subObject.parentSubmeshIndex = parentSubmeshIndex;
 				subObject.mesh = clippedMesh;
-				subObject.saveMesh();
+				subObject.SaveMesh();
 
 				return subObject;
             }
@@ -368,21 +326,21 @@ namespace TileBakeLibrary
 			return null;
         }
 
-		public void calculateNormals()
+		public void CalculateNormals()
         {
             for (int i = 0; i < triangleIndices.Count; i+=3)
             {
 				int index1 = triangleIndices[i];
 				int index2 = triangleIndices[i+1];
 				int index3 = triangleIndices[i + 2];
-				Vector3 normal = calculateNormal(vertices[index1], vertices[index2], vertices[index3]);
+				Vector3 normal = CalculateNormal(vertices[index1], vertices[index2], vertices[index3]);
 				normals[index1] = normal;
 				normals[index2] = normal;
 				normals[index3] = normal;
 			}
         }
 
-		private static Vector3 calculateNormal(Vector3Double v1, Vector3Double v2, Vector3Double v3)
+		private static Vector3 CalculateNormal(Vector3Double v1, Vector3Double v2, Vector3Double v3)
 		{
 			Vector3 normal = new Vector3();
 			Vector3Double U = v2 - v1;
@@ -401,34 +359,4 @@ namespace TileBakeLibrary
 
 		}
 	}
-	 struct vertexNormalCombination : IEquatable<vertexNormalCombination>
-	{
-		public Vector3 normal;
-		public Vector3Double vertex;
-
-		public vertexNormalCombination(Vector3Double vertex, Vector3 normal)
-		{
-			this.vertex = vertex;
-			this.normal = normal;
-
-		}
-		public bool Equals(vertexNormalCombination other)
-        {
-			float deltaX = Math.Abs(other.normal.X - normal.X);
-			float deltaY = Math.Abs(other.normal.Y - normal.Y);
-			float deltaZ = Math.Abs(other.normal.Z - normal.Z);
-			bool normalIsAlmostTheSame = false;
-			if (deltaX<0.01&&deltaY<0.001&deltaZ<0.001)
-			{
-				normalIsAlmostTheSame = true;
-			}
-
-			if (normalIsAlmostTheSame && other.vertex == vertex)
-            {
-				return true;
-            }
-			return false;
-            
-        }
-    }
 }

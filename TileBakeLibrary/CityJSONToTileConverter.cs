@@ -47,8 +47,6 @@ namespace TileBakeLibrary
 
 		private bool replaceExistingIDs = true;
 
-		private float maxNormalAngle = 5.0f;
-
 		private bool addToExistingTiles = false;
 
 		private bool exportUVCoordinates = false;
@@ -68,6 +66,15 @@ namespace TileBakeLibrary
 		private bool clipSpikes = false;
 		private float spikeCeiling = 0;
 		private float spikeFloor = 0;
+
+		/// <summary>
+		/// Sets the normal angle threshold for vertex+normal combinations to be considered the same
+		/// </summary>
+		/// <param name="mergeVerticesBelowNormalAngle">Angle in degrees.</param>
+		public void SetVertexMergeAngleThreshold(float mergeVerticesBelowNormalAngle)
+		{
+			VertexNormalCombination.normalAngleComparisonThreshold = mergeVerticesBelowNormalAngle;
+		}
 
 		public void SetClipSpikes(bool setFunction, float ceiling, float floor)
 		{
@@ -136,6 +143,11 @@ namespace TileBakeLibrary
 			this.replaceExistingIDs = replace;
 		}
 
+		/// <summary>
+		/// Sets the output of UV coordinates.
+		/// CityJSON input should contain UV texture coordinates.
+		/// </summary>
+		/// <param name="exportUV"></param>
 		public void SetExportUV(bool exportUV)
 		{
 			this.exportUVCoordinates = exportUV;
@@ -427,10 +439,9 @@ namespace TileBakeLibrary
 				 }
 				 else
 				 {
-					 if (maxNormalAngle != 0)
+					 if (VertexNormalCombination.normalAngleComparisonThreshold != 0)
 					 {
-
-						 subObject.MergeSimilarVertices(maxNormalAngle);
+						 subObject.MergeSimilarVertices();
 					 }
 				 }
 				 if (clipSpikes)
@@ -442,10 +453,10 @@ namespace TileBakeLibrary
 				 {
 					 Interlocked.Increment(ref tiling);
 					 Console.Write("\r" + done + " done; " + skipped + " skipped ; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling                    ");
-					 var newSubobjects = subObject.clipSubobject(new Vector2(tileSize, tileSize));
+					 var newSubobjects = subObject.ClipSubobject(new Vector2(tileSize, tileSize));
 					 if (newSubobjects.Count == 0)
 					 {
-						 subObject.calculateNormals();
+						 subObject.CalculateNormals();
 						 filterobjectsBucket.Add(subObject);
 					 }
 					 else
@@ -476,7 +487,6 @@ namespace TileBakeLibrary
 
 		private SubObject ToSubObjectMeshData(CityObject cityObject)
 		{
-			List<SubObject> subObjects = new List<SubObject>();
 			var subObject = new SubObject();
 			subObject.vertices = new List<Vector3Double>();
 			subObject.normals = new List<Vector3>();
@@ -513,6 +523,7 @@ namespace TileBakeLibrary
 					}
 				}
 			}
+
 			subObject.parentSubmeshIndex = submeshindex;
 			if (submeshindex == -1)
 			{
@@ -537,6 +548,7 @@ namespace TileBakeLibrary
 			{
 				calculateNormals = true;
 			}
+
 			AppendCityObjectGeometry(cityObject, subObject, calculateNormals);
 			//Append all child geometry too
 			for (int i = 0; i < cityObject.children.Count; i++)
