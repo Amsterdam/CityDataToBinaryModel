@@ -440,10 +440,8 @@ namespace TileBakeLibrary
 				}
 				else
 				{
-					if (VertexNormalCombination.normalAngleComparisonThreshold != 0)
-					{
-						subObject.MergeSimilarVertices();
-					}
+					//Always merge based on VertexNormalCombination.normalAngleComparisonThreshold
+					subObject.MergeSimilarVertices();
 				}
 				if (clipSpikes)
 				{

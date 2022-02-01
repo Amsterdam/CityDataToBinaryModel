@@ -35,8 +35,6 @@ namespace TileBakeLibrary
 		public int parentSubmeshIndex = 0;
 		public string id = "";
 
-		private double distanceMergeThreshold = 0.01;
-
 		private DMesh3 mesh;
 		public float maxVerticesPerSquareMeter;
 
@@ -52,6 +50,7 @@ namespace TileBakeLibrary
 			int oldIndex = 0;
 			int newIndex = 0;
 
+			
 			Dictionary<VertexNormalCombination,int> vertexNormalCombinations = new Dictionary<VertexNormalCombination,int>();
             for (int i = 0; i < triangleIndices.Count; i++)
             {
@@ -83,9 +82,6 @@ namespace TileBakeLibrary
 				}
 				triangleIndices[i] = newIndex;
             }
-
-			if(vertices.Count != cleanedVertices.Count)
-				Console.WriteLine($"Doubles removed: {vertices.Count - cleanedVertices.Count}");
 
 			vertices = cleanedVertices;
 			normals = cleanedNormals;

@@ -81,7 +81,6 @@ namespace TileBakeLibrary.BinaryMesh
                     {
                         mesh.vertices.Add(ConvertVertex(subobject.vertices[i]));
                         mesh.normals.Add(ConvertNormaltoBinary(subobject.normals[i]));
-                        
                     }
 
                     if (exportUVs)

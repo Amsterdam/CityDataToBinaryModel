@@ -29,12 +29,20 @@ namespace TileBakeLibraryUnitTests
 			vertices.Add(new Vector3Double(0, 3, 0));
 			vertices.Add(new Vector3Double(3, 3, 0));
 
+			vertices.Add(new Vector3Double(0, 0, 0)); //< - Double vertex position
+			vertices.Add(new Vector3Double(0, 4, 0));
+			vertices.Add(new Vector3Double(4, 4, 0));
+
 			var normals = new List<Vector3>();
 			normals.Add(new Vector3(0, 0, 1));
 			normals.Add(new Vector3(0, 1, 0)); 
 			normals.Add(new Vector3(1, 0, 0));
 
 			normals.Add(new Vector3(0, 0, 1)); // Equal normal
+			normals.Add(new Vector3(0, 1, 0));
+			normals.Add(new Vector3(1, 0, 0));
+
+			normals.Add(new Vector3(0, 0, 1.0005f)); // Equal enough normal
 			normals.Add(new Vector3(0, 1, 0));
 			normals.Add(new Vector3(1, 0, 0));
 
@@ -57,7 +65,7 @@ namespace TileBakeLibraryUnitTests
 			var vertexLengthAfterMerge = subObject.vertices.Count;
 			Console.WriteLine($"After: {vertexLengthAfterMerge}");
 
-			Assert.AreEqual(vertexLengthBeforeMerge, vertexLengthAfterMerge+2, $"2 Vertices should have been merged");
+			Assert.AreEqual(vertexLengthBeforeMerge, vertexLengthAfterMerge+3, $"3 Vertices should have been merged");
 		}
 
 		[TestMethod]
@@ -77,6 +85,16 @@ namespace TileBakeLibraryUnitTests
 
 			var angle = (int)Math.Round((VertexNormalCombination.AngleBetweenNormals(normalA, normalB)));
 			Assert.AreEqual(angle, 45, $"Angle should be 45 between normals.");
+		}
+
+		[TestMethod]
+		public void AngleBetweenNormalsOtherWay()
+		{
+			var normalA = new Vector3(0, 1, 0); //Up
+			var normalB = new Vector3(10, 0, 0); //Right
+
+			var angle = (int)Math.Round((VertexNormalCombination.AngleBetweenNormals(normalB, normalA)));
+			Assert.AreEqual(angle, 90, $"Angle should be 90 between normals.");
 		}
 
 		[TestMethod]

@@ -26,10 +26,11 @@ namespace TileBakeLibrary
 		/// <summary>
 		/// Angle in degrees
 		/// </summary>
-		public static float vertexDistanceComparisonThreshold = 0.1f; //1mm
+		public static float vertexDistanceComparisonThreshold = 0.01f; //1mm
 		public static float normalAngleComparisonThreshold = 5.0f;
 
 		public Vector3 normal;
+
 		public Vector3Double vertex;
 		public VertexNormalCombination(Vector3Double vertex, Vector3 normal)
 		{
@@ -37,10 +38,14 @@ namespace TileBakeLibrary
 			this.normal = normal;
 		}
 
+		/// <summary>
+		/// Compares vert+normal with thresholds determining if they are the same
+		/// </summary>
+		/// <returns></returns>
 		public bool Equals(VertexNormalCombination other)
         {
 			if (Vector3Double.Distance(other.vertex,vertex) < vertexDistanceComparisonThreshold)
-            {
+			{
 				if (AngleBetweenNormals(normal, other.normal) < normalAngleComparisonThreshold)
 				{
 					return true;
@@ -48,6 +53,15 @@ namespace TileBakeLibrary
             }
 			return false;
         }
+
+		/// <summary>
+		/// Forces comparison using Equals
+		/// </summary>
+		/// <returns></returns>
+		public override int GetHashCode()
+		{
+			return 0;
+		}
 
 		/// <summary>
 		/// Normal in degrees
@@ -58,15 +72,14 @@ namespace TileBakeLibrary
 		/// <returns></returns>
 		public static double AngleBetweenNormals(Vector3 a, Vector3 b, bool radiansInsteadOfDegrees = false)
 		{
-			var normalA = Vector3.Normalize(a);
-			var normalB = Vector3.Normalize(b);
+			Vector3 normalA = Vector3.Normalize(a);
+			Vector3 normalB = Vector3.Normalize(b);
 
 			var radians =  2.0d * Math.Atan((normalA - normalB).Length() / (normalA + normalB).Length());
 			if(radiansInsteadOfDegrees)
 			{
 				return radians;
 			}
-
 			return (180.0f / Math.PI) * radians;
 		}
 
