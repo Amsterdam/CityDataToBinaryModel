@@ -46,6 +46,7 @@ namespace TileBakeTool
 		private static string filterType = "";
 
 		private static bool removeSpikes = false;
+		private static float mergeVerticesBelowAngle = 0;
 		private static float spikeCeiling = 0;
 		private static float spikeFloor = 0;
 
@@ -118,6 +119,7 @@ namespace TileBakeTool
 				spikeCeiling = configFile.removeSpikesAbove;
 				spikeFloor = configFile.removeSpikesBelow;
 				replaceExistingIDs = configFile.replaceExistingObjects;
+				mergeVerticesBelowAngle = configFile.mergeVerticesBelowAngle;
 				identifier = configFile.identifier;
 				removeFromIdentifier = configFile.removePartOfIdentifier;
 				exportUVCoordinates = configFile.exportUVCoordinates;
@@ -186,6 +188,7 @@ namespace TileBakeTool
 			tileBaker.SetSourcePath(sourcePath);
 			tileBaker.SetTargetPath(targetPath);
 			tileBaker.SetLOD(lod);
+			tileBaker.SetVertexMergeAngleThreshold(mergeVerticesBelowAngle);
 			tileBaker.SetFilterType(filterType);
 			tileBaker.SetID(identifier, removeFromIdentifier);
 			tileBaker.SetReplace(replaceExistingIDs);

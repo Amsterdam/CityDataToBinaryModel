@@ -2,6 +2,7 @@
 	"sourceFolder":"E:/brondata/pandenTUDelft/downloaded_tiles_amsterdam/",
 	"outputFolder": "E:/brondata/terreintest/output-buildings/Buildings-",
 	"replaceExistingObjects":false,
+	"mergeVerticesBelowAngle":5,
 	"identifier":"identificatie",
 	"removePartOfIdentifier":"NL.IMBAG.Pand.",
 	"lod":2.2,

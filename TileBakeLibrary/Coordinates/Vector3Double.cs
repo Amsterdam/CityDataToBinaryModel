@@ -48,12 +48,12 @@ namespace TileBakeLibrary.Coordinates
         }
 
         public static double Distance(Vector3Double left, Vector3Double right){
-            return Magnitude(left - right);
+            return Math.Abs(Magnitude(left - right));
         }
 
         public static double Magnitude(Vector3Double left)
         {
-            return Math.Sqrt(left.X * left.X + left.Y*left.Y + left.Z*left.Z);
+            return Math.Sqrt(left.X * left.X + left.Y * left.Y + left.Z * left.Z);
         }
 
         public bool Equals(Vector3Double other)
