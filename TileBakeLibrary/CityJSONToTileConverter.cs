@@ -543,6 +543,11 @@ namespace TileBakeLibrary
 					if (semantic.name == identifier)
 					{
 						subObject.id = semantic.value;
+                        if (removeFromID!="")
+                        {
+							subObject.id = subObject.id.Replace(removeFromID, "");
+						}
+						
 						break;
 					}
 				}
