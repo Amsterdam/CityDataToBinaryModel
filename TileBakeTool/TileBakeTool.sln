@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31702.278
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TileBakeTool", "TileBakeTool.csproj", "{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -10,26 +10,39 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TileBakeTool", "TileBakeToo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TileBakeLibrary", "..\TileBakeLibrary\TileBakeLibrary.csproj", "{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TileBakeLibraryUnitTests", "..\TileBakeLibraryUnitTests\TileBakeLibraryUnitTests.csproj", "{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TileBakeLibraryUnitTests", "..\TileBakeLibraryUnitTests\TileBakeLibraryUnitTests.csproj", "{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Debug|x64.ActiveCfg = Debug|x64
+		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Debug|x64.Build.0 = Debug|x64
 		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Release|x64.ActiveCfg = Release|x64
+		{0BAF596B-2C1D-48D5-A699-19ED690AAC4A}.Release|x64.Build.0 = Release|x64
 		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{7C7B2E84-D073-46CB-8FA7-1BE28C8595AA}.Release|x64.Build.0 = Release|Any CPU
 		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Debug|x64.ActiveCfg = Debug|x64
+		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Debug|x64.Build.0 = Debug|x64
 		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Release|x64.ActiveCfg = Release|x64
+		{85CDFE50-BFB3-4D08-A12C-C87AF9835C71}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
