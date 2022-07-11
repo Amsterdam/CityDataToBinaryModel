@@ -328,7 +328,7 @@ namespace TileBakeLibrary
 			{
 				if (tile.SubObjects.Count == 0)
 				{
-					//Console.WriteLine($"Skipping {tile.filePath} containing {tile.SubObjects.Count} SubObjects");
+					Console.WriteLine($"Skipping {tile.filePath} containing {tile.SubObjects.Count} SubObjects");
 				}
 				else
 				{
@@ -507,6 +507,7 @@ namespace TileBakeLibrary
 				{
 					submeshindex = cityObjectFilters[i].defaultSubmeshIndex;
 					subObject.maxVerticesPerSquareMeter = cityObjectFilters[i].maxVerticesPerSquareMeter;
+					subObject.skipTrianglesBelowArea = cityObjectFilters[i].skipTrianglesBelowArea;
 					for (int j = 0; j < cityObjectFilters[i].attributeFilters.Length; j++)
 					{
 						string attributename = cityObjectFilters[i].attributeFilters[j].attributeName;

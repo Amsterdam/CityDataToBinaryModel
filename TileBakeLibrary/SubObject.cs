@@ -37,6 +37,7 @@ namespace TileBakeLibrary
 
 		private DMesh3 mesh;
 		public float maxVerticesPerSquareMeter;
+		public float skipTrianglesBelowArea;
 
 		public void MergeSimilarVertices()
 		{
@@ -91,7 +92,6 @@ namespace TileBakeLibrary
 		private void CreateMesh()
         {
 			mesh = new DMesh3(false, false, false, false);
-			
 			for (int i = 0; i < vertices.Count; i++)
 			{
 				mesh.AppendVertex(new Vector3d(vertices[i].X, vertices[i].Y, vertices[i].Z));
@@ -101,6 +101,12 @@ namespace TileBakeLibrary
 			{
 				mesh.AppendTriangle(triangleIndices[i], triangleIndices[i + 1], triangleIndices[i + 2]);
 			}
+
+			if(skipTrianglesBelowArea > 0)
+            {
+				var removedTriangles = MeshEditor.RemoveSmallComponents(mesh, skipTrianglesBelowArea, skipTrianglesBelowArea);
+			}
+
 			MeshNormals.QuickCompute(mesh);
 		}
 
