@@ -2,7 +2,7 @@
 
 ## TileBakeTool
 
-The TileBakeTool is and executable that converts CityJSON files from a target folder into combined binary mesh tiles, either by adding the City Objects to a tile using a OVERLAP method, or TILED.
+The TileBakeTool is and executable that converts RD coordinate based CityJSON files from a target folder into combined binary mesh tiles. City Objects are added to tiles using an OVERLAP or TILED method.
 
 OVERLAP places a CityObject in a mesh tile if its centroid is within the tile bounds.
 TILED cuts CityObjects using the bounds and places the parts into their tiles.
@@ -29,7 +29,7 @@ Use `TileBakeTool.exe --config PathToYourConfigFile.json` to start the tool usin
 
 Gltf files are created next to the binary tiles as a wrapper for the binary data.
 This way the binary tiles can be used standalone, or used/imported as Gltf files with external binary mesh data.
-The Gltf files also allow you to preview the 3D output using standard 3D viewers like the one Windows 10+ offers.
+The Gltf files also allow you to load/preview the 3D output using 3D viewers/tools like the standard Windows 3D Viewer.
 
 ## Brotli compression
 
