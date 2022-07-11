@@ -2,7 +2,7 @@
 
 ## TileBakeTool
 
-The TileBakeTool is and executable that converts RD coordinate based CityJSON files from a target folder into combined binary mesh tiles. City Objects are added to tiles using an OVERLAP or TILED method.
+The TileBakeTool is an executable that converts RD coordinate based CityJSON files from a target folder into combined binary mesh tiles. City Objects are added to tiles using an OVERLAP or TILED method.
 
 OVERLAP places a CityObject in a mesh tile if its centroid is within the tile bounds.
 TILED cuts CityObjects using the bounds and places the parts into their tiles.
