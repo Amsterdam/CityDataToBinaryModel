@@ -104,7 +104,7 @@ namespace TileBakeLibrary
 
 			if(skipTrianglesBelowArea > 0)
             {
-				var removedTriangles = MeshEditor.RemoveSmallComponents(mesh, skipTrianglesBelowArea, skipTrianglesBelowArea);
+				var removedTriangles = MeshEditor.RemoveSmallComponents(mesh, double.MinValue, skipTrianglesBelowArea);
 			}
 
 			MeshNormals.QuickCompute(mesh);
