@@ -45,6 +45,7 @@ public class CityObjectFilter
 	public int defaultSubmeshIndex { get; set; }
 	public AttributeFilter[] attributeFilters { get; set; }
 	public float maxVerticesPerSquareMeter { get; set; }
+	public float skipTrianglesBelowArea { get; set; }
 }
 
 public class AttributeFilter
