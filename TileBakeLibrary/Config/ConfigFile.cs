@@ -24,7 +24,7 @@ public class ConfigFile
 	public string identifier { get; set; }
 	public string removePartOfIdentifier { get; set; }
 	public bool exportUVCoordinates { get; set; }
-	public float lod { get; set; }
+	public float lod { get; set; } = 1.0f;
 	public string tilingMethod { get; set; }
 
 

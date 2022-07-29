@@ -38,21 +38,13 @@ namespace TileBakeLibrary
 	{
 		private string sourcePath = "";
 		private string outputPath = "";
-
 		private string identifier = "";
 		private string removeFromID = "";
-
-		private bool createOBJFiles = false;
 		private bool brotliCompress = false;
-
 		private bool replaceExistingIDs = true;
-
-		private bool addToExistingTiles = false;
-
 		private bool exportUVCoordinates = false;
 
 		private float lod = 0;
-		private string filterType = "";
 
 		public string TilingMethod = "OVERLAP"; //OVERLAP, TILED
 
@@ -96,14 +88,6 @@ namespace TileBakeLibrary
 		public void SetLOD(float targetLOD)
 		{
 			lod = targetLOD;
-		}
-
-		/// <summary>
-		/// Define what kind of cityobject type you want to parse
-		/// </summary>
-		public void SetFilterType(string type)
-		{
-			filterType = type;
 		}
 
 		/// <summary>
@@ -152,14 +136,6 @@ namespace TileBakeLibrary
 		public void SetExportUV(bool exportUV)
 		{
 			this.exportUVCoordinates = exportUV;
-		}
-
-		/// <summary>
-		/// Create an OBJ model file next to the binary file
-		/// </summary>
-		public void CreateOBJ(bool createObjFiles)
-		{
-			this.createOBJFiles = createObjFiles;
 		}
 
 		/// <summary>
@@ -336,9 +312,6 @@ namespace TileBakeLibrary
 					if (tile.filePath.Contains("NaN") == false)
 					{
 						bmd.ExportData(tile, exportUVCoordinates);
-
-						//Optionaly write other format(s) for previewing purposes
-						if (createOBJFiles) OBJWriter.Save(tile);
 					}
 					Interlocked.Increment(ref counter);
 					Console.Write($"\rSaving files...{counter}");

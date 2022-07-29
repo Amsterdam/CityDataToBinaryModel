@@ -26,68 +26,36 @@ namespace TileBakeTool
 {
 	class Program
 	{
-		private static string configFilePath = "";
 		private static ConfigFile configFile;
 
-		private static string sourcePath = "";
-		private static string outputPath = "";
-		private static string newline = "\n";
-
-		private static string identifier = "id";
-		private static string removeFromIdentifier = "";
-
-		private static bool replaceExistingIDs = false;
-		
-		private static bool createBrotliCompressedFiles = false;
-		private static bool createObjFiles = false;
-
-		private static bool exportUVCoordinates = false;
-		private static float lod = 0;
-		private static string filterType = "";
-
-		private static bool removeSpikes = false;
-		private static float mergeVerticesBelowAngle = 0;
-		private static float spikeCeiling = 0;
-		private static float spikeFloor = 0;
-
-		private static bool sliceGeometry = false;
+		private static string sourcePathOverride = "";
+		private static string outputPathOverride = "";
+		private static float lodOverride = 1;
 
 		static void Main(string[] args)
 		{
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
+            //No parameters or an attempt to call for help? Show help in console.
             if (args.Length == 0 || (args.Length == 1 && args[0].ToLower().Contains("help")))
             {
-                //No parameters or an attempt to call for help? Show help in console.
                 ShowHelp();
             }
+            //One parameter? Assume its a config file path
             else if (args.Length == 1)
             {
-                //One parameter? Assume its a config file path
                 ApplyConfigFileSettings(args[0]);
             }
+             //More parameters? Parse them
             else
             {
-                //More parameters? Parse them
                 ParseArguments(args);
             }
 
             //If we received the minimal settings to start, start converting!
-            if (sourcePath != "" && outputPath != "")
-                StartConverting(sourcePath, outputPath);
+            if (configFile != null)
+                StartConverting();
         }
-
-        private static void DefaultArgument(string sourcePath)
-		{
-			if(!Path.IsPathFullyQualified(sourcePath)){
-				Console.WriteLine($"Not a valid path: {sourcePath}");
-				Console.WriteLine($"This might help: ");
-				ShowHelp();
-				return;
-			}
-
-			StartConverting(sourcePath, sourcePath);
-		}
 
 		private static void ParseArguments(string[] args)
 		{
@@ -102,6 +70,10 @@ namespace TileBakeTool
 			}
 		}
 
+		/// <summary>
+		/// Load a .json config file and apply it to our settings object
+		/// </summary>
+		/// <param name="configFilePath">Path to config file</param>
 		private static void ApplyConfigFileSettings(string configFilePath){
 			if(File.Exists(configFilePath))
 			{
@@ -111,27 +83,16 @@ namespace TileBakeTool
 				{ 
 					AllowTrailingCommas = true }
 				);
-
-				sourcePath = configFile.sourceFolder;
-				outputPath = configFile.outputFolder;
-
-				removeSpikes = configFile.removeSpikes;
-				spikeCeiling = configFile.removeSpikesAbove;
-				spikeFloor = configFile.removeSpikesBelow;
-				replaceExistingIDs = configFile.replaceExistingObjects;
-				mergeVerticesBelowAngle = configFile.mergeVerticesBelowAngle;
-				identifier = configFile.identifier;
-				removeFromIdentifier = configFile.removePartOfIdentifier;
-				exportUVCoordinates = configFile.exportUVCoordinates;
-				if (configFile.lod != 0.0f) lod = configFile.lod;
-				createBrotliCompressedFiles = configFile.brotliCompression;
-
-				sliceGeometry = (configFile.tilingMethod == "SLICED"); //TILED or SLICED
-
-				Console.WriteLine($"Loaded config file with settings");
+				Console.WriteLine($"Loaded config file: {Path.GetFileName(configFilePath)}");
 			}
 		}
 
+
+		/// <summary>
+		/// Apply commandline parameters as settings
+		/// </summary>
+		/// <param name="argument">Commandline parameter argument</param>
+		/// <param name="value">Commandline parameter value</param>
 		private static void ApplySetting(string argument, string value)
 		{
 			switch (argument)
@@ -140,73 +101,51 @@ namespace TileBakeTool
 					ApplyConfigFileSettings(value);
 					break;
 				case "--source":
-					sourcePath = value;
+					sourcePathOverride = value;
 					Console.WriteLine($"Source: {value}");
 					break;
 				case "--output":
-					outputPath = value;
+					outputPathOverride = value;
 					Console.WriteLine($"Output directory: {value}");
 					break;
-				case "--replace":
-					replaceExistingIDs = true;
-					Console.WriteLine($"Replacing existing IDs");
-					break;
 				case "--lod":
-					lod = float.Parse(value,System.Globalization.CultureInfo.InvariantCulture);
-					Console.WriteLine($"LOD filter: {lod}");
-					break;
-				case "--type":
-					filterType = value;
-					Console.WriteLine($"Type filter: {filterType}");
-					break;
-				case "--id":
-					identifier = value;
-					Console.WriteLine($"Object identifier: {identifier}");
-					break;
-				case "--id-remove":
-					removeFromIdentifier = value;
-					Console.WriteLine($"Remove from identifier: {removeFromIdentifier}");
-					break;
-				case "--brotli":
-					createBrotliCompressedFiles = true;
-					break;
-				case "--obj":
-					createObjFiles = true;
+					lodOverride = float.Parse(value,System.Globalization.CultureInfo.InvariantCulture);
+					Console.WriteLine($"LOD filter: {lodOverride}");
 					break;
 				default:
-					
 					break;
 			}
 		}
 
-		private static void StartConverting(string sourcePath, string targetPath)
+		/// <summary>
+		/// Start the converting process using the current configuration
+		/// </summary>
+		private static void StartConverting()
 		{
 			Console.WriteLine("Starting...");
 
-			//Here we use the .dll. This usage is the same as in Unity3D.
+			//Here we use the .dll. This way we may use this library in Unity, or an Azure C# Function
 			var tileBaker = new CityJSONToTileConverter();
-			tileBaker.SetSourcePath(sourcePath);
-			tileBaker.SetTargetPath(targetPath);
-			tileBaker.SetLOD(lod);
-			tileBaker.SetVertexMergeAngleThreshold(mergeVerticesBelowAngle);
-			tileBaker.SetFilterType(filterType);
-			tileBaker.SetID(identifier, removeFromIdentifier);
-			tileBaker.SetReplace(replaceExistingIDs);
-			tileBaker.SetExportUV(exportUVCoordinates);
-			tileBaker.CreateOBJ(createObjFiles);
-			tileBaker.AddBrotliCompressedFile(createBrotliCompressedFiles);
-			
-			if (configFile != null)
-			{
-				tileBaker.SetClipSpikes(removeSpikes, spikeCeiling, spikeFloor);
-				tileBaker.SetObjectFilters(configFile.cityObjectFilters);
-				tileBaker.SetTileSize(configFile.tileSize);
-				tileBaker.TilingMethod = configFile.tilingMethod;
-			}
+			tileBaker.SetSourcePath((sourcePathOverride != "") ? sourcePathOverride : configFile.sourceFolder);
+			tileBaker.SetTargetPath((outputPathOverride != "") ? outputPathOverride : configFile.outputFolder);
+			tileBaker.SetLOD(configFile.lod);
+			tileBaker.SetVertexMergeAngleThreshold(configFile.mergeVerticesBelowAngle);
+			tileBaker.SetID(configFile.identifier, configFile.removePartOfIdentifier);
+			tileBaker.SetReplace(configFile.replaceExistingObjects);
+			tileBaker.SetExportUV(configFile.exportUVCoordinates);
+			tileBaker.AddBrotliCompressedFile(configFile.brotliCompression);
+			tileBaker.SetClipSpikes(configFile.removeSpikes, configFile.removeSpikesAbove, configFile.removeSpikesBelow);
+			tileBaker.SetObjectFilters(configFile.cityObjectFilters);
+			tileBaker.SetTileSize(configFile.tileSize);
+			tileBaker.TilingMethod = configFile.tilingMethod;
 
 			tileBaker.Convert();
 		}
 
+
+		/// <summary>
+		/// Draw the help text in the commandline
+		/// </summary>
 		private static void ShowHelp()
 		{
 			Console.Write(Constants.helpText);
