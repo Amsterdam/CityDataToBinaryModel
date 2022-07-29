@@ -31,27 +31,29 @@ namespace TileBakeTool
 
 
 This tool parses CityJSON files and bakes them into single-mesh binary tile files.
-Seperate metadata files contain the seperation of sub-objects.
-Check out http:/3d.amsterdam.nl/netherlands3d for help.
+Seperate metadata files contain the description and geometry location of sub-objects.
+Check out https://github.com/Amsterdam/CityDataToBinaryModel for example config files and help.
 
-Required options:
+Required parameter:
 
---source <path to CityJSON files>
---output <path to tile output folder>
+--config <path to a .json config file>
 
-Extra options:
+Optional options:
 
---replace                      Replace objects with the same ID
---id <property name>           Unique ID property name
---type <type filter>           Filter this type
---id-remove <string>           Remove this substring from the ID's
---lod <lod filter>             Target LOD. For example 2.2
---config <config file path>    Apply advanced settings above via config file
---brotli                       Write a brotli compressed .br variant of the .bin
+--source <Override config path to source files>
+--output <Override config path to output target>
+--lod <Override config lod filter setting>
 
-Pipeline example:
-TileBakeTool.exe --source ""C:/CityJSON/Source/"" --output ""C:/CityJSON/Output/buildings_""--id ""identificatie"" --lod 2.2 --type Building --replace --brotli --id-remove ""NL.IMBAG.Pand.""
+Pipeline example 1
+TileBakeTool.exe --config Buildings.json
+TileBakeTool.exe --config Terrain.json
+TileBakeTool.exe --config Trees.json
 
+Pipeline example 2
+Exporting two LOD datasets with same config template:
+
+TileBakeTool.exe --config Buildings.json --lod 1.2 --output ""C:/buildings/buildings_1.2_""
+TileBakeTool.exe --config Buildings.json --lod 2.0 --output ""C:/Buildings/buildings_2.0_""
 ";
 
 	}
