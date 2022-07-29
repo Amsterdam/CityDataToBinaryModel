@@ -15,8 +15,6 @@
 *  implied. See the License for the specific language governing
 *  permissions and limitations under the License.
 */
-#define DEBUG
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,11 +51,15 @@ namespace TileBakeLibrary
 		private List<SubObject> allSubObjects = new List<SubObject>();
 		private List<Tile> tiles = new List<Tile>();
 
+		private CityJSON cityJson;
 		private CityObjectFilter[] cityObjectFilters;
 
 		private bool clipSpikes = false;
 		private float spikeCeiling = 0;
 		private float spikeFloor = 0;
+
+		private int filecounter = 0;
+		private int totalFiles = 0;
 
 		/// <summary>
 		/// Sets the normal angle threshold for vertex+normal combinations to be considered the same
@@ -146,22 +148,12 @@ namespace TileBakeLibrary
 			this.brotliCompress = brotliCompress;
 		}
 
-
-		private CityJSON cityJson;
-
 		/// <summary>
 		/// Start converting the cityjson files into binary tile files
 		/// </summary>
 		/// 
-
-		private int filecounter = 0;
-		private int totalFiles = 0;
 		public void Convert()
 		{
-#if DEBUG
-			Console.WriteLine($"Converting with Debug mode ON");
-#endif
-
 			//If no specific filename or wildcard was supplied, default to .json files
 			var filter = Path.GetFileName(sourcePath);
 			if (filter == "") filter = "*.json";
@@ -170,7 +162,8 @@ namespace TileBakeLibrary
 			string[] sourceFiles = Directory.GetFiles(sourcePath, filter);
 			if (sourceFiles.Length == 0)
 			{
-				Console.WriteLine($"No \"{filter}\" files found in {sourcePath}");
+				Console.WriteLine($"No \"{filter}\" files found in {sourcePath}.");
+				Console.WriteLine($"Please check if the sourceFolder in your config file is correct.");
 				return;
 			}
 
@@ -181,7 +174,6 @@ namespace TileBakeLibrary
 			{
 				cityJson = new CityJSON(sourceFiles[0], true, true);
 			}
-
 			for (int i = 0; i < sourceFiles.Length; i++)
 			{
 				CityJSON nextCityJSON = null;
@@ -191,27 +183,28 @@ namespace TileBakeLibrary
 					nextJsonID = i;
 				}
 
+				//Start new threaded process
 				Thread thread;
 				thread = new Thread(() =>  
 					{
 						nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);
 					}
 				);
-
 				thread.Start();
-
 				Stopwatch watch = new Stopwatch();
 				watch.Start();
 				tiles = new List<Tile>();
 				var index = i;
 				filecounter++;
-				Console.WriteLine($"processing file {filecounter} of {sourceFiles.Length}");
+				Console.WriteLine($"\nProcessing file {filecounter}/{sourceFiles.Length}");
 				var cityObjects = CityJSONParseProcess(cityJson);
 				allSubObjects.Clear();
 				allSubObjects = cityObjects;
-				Console.WriteLine($"\r{allSubObjects.Count} CityObjects imported                                                                                    ");
+				Console.WriteLine($"\n{allSubObjects.Count} CityObjects imported");
 				PrepareTiles();
 				WriteTileData();
+
+				//Clean up and join thread
 				allSubObjects.Clear();
 				cityJson = null;
 				GC.Collect();
@@ -220,9 +213,9 @@ namespace TileBakeLibrary
 				string elapsedTimeString = string.Format("{0}:{1} minutes",
 										  result.Minutes.ToString("00"),
 										  result.Seconds.ToString("00"));
-				Console.WriteLine($"duration: {elapsedTimeString}");
-
+				Console.WriteLine($"Duration: {elapsedTimeString}");
 				thread.Join();
+
 				cityJson = nextCityJSON;
 			}
 
@@ -295,16 +288,18 @@ namespace TileBakeLibrary
 		{
 			//Create binary files (if we added subobjects to it)
 			Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
-			Console.Write($"\rBaking {tiles.Count} tiles");
+			Console.WriteLine($"\nBaking {tiles.Count} tiles");
 			//Threaded writing of binary meshes + compression
-			Console.Write("\rSaving files...          ");
 			int counter = 0;
+			int written = 0;
+			int skipped = 0;
+			int total = tiles.Count;
 
 			Parallel.ForEach(tiles, tile =>
 			{
 				if (tile.SubObjects.Count == 0)
 				{
-					Console.WriteLine($"Skipping {tile.filePath} containing {tile.SubObjects.Count} SubObjects");
+					Interlocked.Increment(ref skipped);		
 				}
 				else
 				{
@@ -313,40 +308,68 @@ namespace TileBakeLibrary
 					{
 						bmd.ExportData(tile, exportUVCoordinates);
 					}
-					Interlocked.Increment(ref counter);
-					Console.Write($"\rSaving files...{counter}");
+					Interlocked.Increment(ref written);
 				}
+				Interlocked.Increment(ref counter);
+				WriteBakingLog(counter, written, skipped, total);
 			});
 
-			Console.WriteLine($"\r{counter} files saved                                                                                             ");
+			Console.WriteLine($"\n{written} tiles saved");
 		}
 
+		public static void WriteBakingLog(int done, int written, int skipped, int total)
+        {
+			float percentageDone = ((float)done / total) * 100.0f;
+			Console.Write($"\rTile baking process: {(percentageDone):F0}% | Baked: {written} | Skipped empty tiles: {skipped}");
+        }
+
+		/// <summary>
+		/// Rewrite threaded compressing status message on the current console line.
+		/// </summary>
+		/// <param name="done">Total binary tiles compressed</param>
+		/// <param name="total">Total binary tiles to compress</param>
+		public static void WriteCompressingLog(int done, int total)
+		{
+			float percentageDone = ((float)done / total) * 100.0f;
+			Console.WriteLine($"\rCompressing process: {(percentageDone):F0}% | Compressed: {done}/{total}");
+		}
+
+		/// <summary>
+		/// Compress all files binary files in the output folder into brotli compressed files with .br extention 
+		/// </summary>
 		public void CompressFiles()
 		{
-			var filter = $"*{lod}.bin";
+			var filter = "*{lod}.bin";
 
 			//List the files that we are going to parse
 			string[] binFiles = Directory.GetFiles(Path.GetDirectoryName(outputPath), filter);
 			Stopwatch watch = new Stopwatch();
 			watch.Start();
-			int counter = 0;
+			int compressedCount = 0;
 			int totalcount = binFiles.Length;
-			Console.Write("\rCompressing files");
+
+			if(totalcount == 0)
+            {
+				Console.WriteLine("\nNo tile files found to compress. It appears no tiles were baked.");
+				return;
+            }
+
+			Console.WriteLine("\nCompressing files");
 			Parallel.ForEach(binFiles, filename =>
 			{
 				if (brotliCompress)
 				{
 					BrotliCompress.Compress(filename);
 				}
-				Interlocked.Increment(ref counter);
-				Console.Write($"\rCompressing files {counter} of {totalcount}");
+				Interlocked.Increment(ref compressedCount);
+				WriteCompressingLog(compressedCount, totalcount);
 			});
 			watch.Stop();
 			var result = watch.Elapsed;
 			string elapsedTimeString = string.Format("{0}:{1} minutes",
 									  result.Minutes.ToString("00"),
 									  result.Seconds.ToString("00"));
-			Console.WriteLine($"Duration: {elapsedTimeString}");
+			Console.WriteLine($"\nDuration: {elapsedTimeString}");
 		}
 
 		public void SetObjectFilters(CityObjectFilter[] cityObjectFilters)
@@ -362,18 +385,15 @@ namespace TileBakeLibrary
 			BinaryMeshData bmd = new BinaryMeshData();
 			bmd.ImportData(tile, replaceExistingIDs);
 			bmd = null;
-			// Console.WriteLine($"Parsed existing tile {tile.filePath} with {tile.SubObjects.Count} subobjects");
 		}
-
 
 		private List<SubObject> CityJSONParseProcess(CityJSON cityJson)
 		{
 			List<SubObject> filteredObjects = new List<SubObject>();
 			Console.WriteLine("");
-
-			Console.Write("\r reading cityobjects");
+			Console.WriteLine("Reading CityObjects from CityJSON");
 			int cityObjectCount = cityJson.CityObjectCount();
-			Console.WriteLine($"\r CityObjects found: {cityObjectCount}");
+			Console.WriteLine($"\rCityObjects found: {cityObjectCount}");
 			Console.Write("---");
 			int skipped = 0;
 			int done = 0;
@@ -388,12 +408,10 @@ namespace TileBakeLibrary
 			{
 				Interlocked.Increment(ref parsing);
 				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
-				WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+				WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 				var subObject = ToSubObjectMeshData(cityObject);
-				//cityJson.ClearCityObject(cityObject.keyName);
 				cityObject = null;
 				Interlocked.Decrement(ref parsing);
-
 				cityObject = null;
 				if (subObject == null)
 				{
@@ -401,15 +419,15 @@ namespace TileBakeLibrary
 					Interlocked.Increment(ref skipped);
 					return;
 				}
-				WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+				WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 
 				if (subObject.maxVerticesPerSquareMeter > 0)
 				{
 					Interlocked.Increment(ref simplifying);
-					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+					WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 					subObject.SimplifyMesh();
 					Interlocked.Decrement(ref simplifying);
-					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+					WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 				}
 				else
 				{
@@ -424,7 +442,7 @@ namespace TileBakeLibrary
 				if (TilingMethod == "TILED")
 				{
 					Interlocked.Increment(ref tiling);
-					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+					WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 					var newSubobjects = subObject.ClipSubobject(new Vector2(tileSize, tileSize));
 					if (newSubobjects.Count == 0)
 					{
@@ -442,7 +460,7 @@ namespace TileBakeLibrary
 						}
 					}
 					Interlocked.Decrement(ref tiling);
-					WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+					WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 				}
 				else
 				{
@@ -450,16 +468,16 @@ namespace TileBakeLibrary
 				}
 
 				Interlocked.Increment(ref done);
-				WriteStatusToConsole(skipped, done, parsing, simplifying, tiling);
+				WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 			}
 			);
 
 			return filterObjectsBucket.ToList();
 		}
 
-		private static void WriteStatusToConsole(int skipped, int done, int parsing, int simplifying, int tiling)
+		private static void WriteParsingStatusToConsole(int skipped, int done, int parsing, int simplifying, int tiling)
 		{
-			Console.Write("\r" + done + " done; " + skipped + " skipped; " + parsing + " parsing; " + simplifying + " simplifying; " + tiling + " tiling;");
+			Console.Write("\rDone: " + done + " | Skipped: " + skipped + " | Parsing: " + parsing + " | Simplifying: " + simplifying + " | Tiling: " + tiling);
 		}
 
 		private SubObject ToSubObjectMeshData(CityObject cityObject)

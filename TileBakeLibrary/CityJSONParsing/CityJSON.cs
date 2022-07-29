@@ -27,6 +27,8 @@ namespace Netherlands3D.CityJSON
 {
 	public class CityJSON
 	{
+		public string sourceFilePath = "";
+
 		public JSONNode cityJsonNode;
 		public Vector3Double[] vertices;
 		private List<Vector2> textureVertices;
@@ -43,7 +45,7 @@ namespace Netherlands3D.CityJSON
 
 		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true)
 		{
-			//string jsonString = File.ReadAllText(filepath);
+			sourceFilePath = filepath;
 			cityJsonNode = JSON.StreamParse(filepath);
 
 			if (cityJsonNode == null || cityJsonNode["CityObjects"] == null)
@@ -53,7 +55,6 @@ namespace Netherlands3D.CityJSON
 			}
 
 			//Get vertices
-			Console.Write("\r reading vertices");
 			textureVertices = new List<Vector2>();
 			Textures = new List<Surfacetexture>();
 
@@ -70,7 +71,7 @@ namespace Netherlands3D.CityJSON
 				   cityJsonNode["transform"]["translate"][2].AsDouble
 			) : new Vector3Double(0, 0, 0);
 
-			//now load all the vertices with the scaler and offset applied
+			//Load all the vertices with the scaler and offset applied
 			vertices = new Vector3Double[cityJsonNode["vertices"].Count];
 			int counter = 0;
 			foreach (JSONNode node in cityJsonNode["vertices"])
@@ -82,7 +83,7 @@ namespace Netherlands3D.CityJSON
 				);
 				vertices[counter++] = vertCoordinates;
 			}
-			//get textureVertices
+			//Get texture vertices
 			foreach (JSONNode node in cityJsonNode["appearance"]["vertices-texture"])
 			{
 				textureVertices.Add(new Vector2(node[0].AsFloat, node[1].AsFloat));
