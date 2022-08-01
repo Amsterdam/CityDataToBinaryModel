@@ -71,6 +71,13 @@ namespace TileBakeLibrary
 			VertexNormalCombination.normalAngleComparisonThreshold = mergeVerticesBelowNormalAngle;
 		}
 
+		/// <summary>
+		/// Set vertex max floor and height to clip off spikes.
+		/// Verts below floor or above ceiling will be reset to 0.
+		/// </summary>
+		/// <param name="setFunction"></param>
+		/// <param name="ceiling">Max vertex height allowed</param>
+		/// <param name="floor">Lowest vertex height allowed</param>
 		public void SetClipSpikes(bool setFunction, float ceiling, float floor)
 		{
 			clipSpikes = setFunction;
@@ -78,6 +85,10 @@ namespace TileBakeLibrary
 			spikeFloor = floor;
 		}
 
+		/// <summary>
+		/// Sets the square tile size
+		/// </summary>
+		/// <param name="tilesize">Value used for width and height of the tiles</param>
 		public void SetTileSize(int tilesize)
 		{
 			tileSize = tilesize;
@@ -149,6 +160,15 @@ namespace TileBakeLibrary
 		}
 
 		/// <summary>
+		/// Set the filter types for CityObjects
+		/// </summary>
+		/// <param name="cityObjectFilters"></param>
+		public void SetObjectFilters(CityObjectFilter[] cityObjectFilters)
+		{
+			this.cityObjectFilters = cityObjectFilters;
+		}
+
+		/// <summary>
 		/// Start converting the cityjson files into binary tile files
 		/// </summary>
 		/// 
@@ -175,62 +195,74 @@ namespace TileBakeLibrary
 				cityJson = new CityJSON(sourceFiles[0], true, true);
 			}
 			for (int i = 0; i < sourceFiles.Length; i++)
-			{
+            {
+				//Start reading the next CityJSON in a seperate thread to prepare for the next loop
 				CityJSON nextCityJSON = null;
-				int nextJsonID = i + 1;
-				if (i + 1 == sourceFiles.Length)
-				{
-					nextJsonID = i;
-				}
+                int nextJsonID = i + 1;
+                if (i + 1 == sourceFiles.Length)
+                {
+                    nextJsonID = i;
+                }
+                Thread thread;
+                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);  });
+                thread.Start();
 
-				//Start new threaded process
-				Thread thread;
-				thread = new Thread(() =>  
-					{
-						nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);
-					}
-				);
-				thread.Start();
-				Stopwatch watch = new Stopwatch();
-				watch.Start();
-				tiles = new List<Tile>();
-				var index = i;
-				filecounter++;
+				//Start reading current CityJSON
 				Console.WriteLine($"\nProcessing file {filecounter}/{sourceFiles.Length}");
-				var cityObjects = CityJSONParseProcess(cityJson);
-				allSubObjects.Clear();
-				allSubObjects = cityObjects;
-				Console.WriteLine($"\n{allSubObjects.Count} CityObjects imported");
-				PrepareTiles();
-				WriteTileData();
+				filecounter++;
+				ReadCityJSON();
 
-				//Clean up and join thread
-				allSubObjects.Clear();
-				cityJson = null;
-				GC.Collect();
-				watch.Stop();
-				var result = watch.Elapsed;
-				string elapsedTimeString = string.Format("{0}:{1} minutes",
-										  result.Minutes.ToString("00"),
-										  result.Seconds.ToString("00"));
-				Console.WriteLine($"Duration: {elapsedTimeString}");
-				thread.Join();
+                //Wait untill the thread reading the next CityJSON is read so we can start reading it
+                thread.Join();
+                cityJson = nextCityJSON;
+            }
 
-				cityJson = nextCityJSON;
-			}
-
-			if (brotliCompress)
+			//Optional compressed variant
+            if (brotliCompress)
 			{
 				CompressFiles();
 			}
 		}
 
-		private void PrepareTiles()
+		/// <summary>
+		/// Read the CityObjects from the current CityJSON
+		/// </summary>
+        private void ReadCityJSON()
+        {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            tiles = new List<Tile>();
+         
+            var cityObjects = CityJSONParseProcess(cityJson);
+            allSubObjects.Clear();
+            allSubObjects = cityObjects;
+
+            Console.WriteLine($"\n{allSubObjects.Count} CityObjects imported");
+            PrepareTiles();
+            WriteTileData();
+
+            //Clean up
+            allSubObjects.Clear();
+            cityJson = null;
+            GC.Collect();
+            watch.Stop();
+            var result = watch.Elapsed;
+            string elapsedTimeString = string.Format("{0}:{1} minutes",
+                                      result.Minutes.ToString("00"),
+                                      result.Seconds.ToString("00"));
+            Console.WriteLine($"Duration: {elapsedTimeString}");
+        }
+
+
+        private void PrepareTiles()
 		{
 			TileSubobjects();
 			AddObjectsFromBinaryTile();
 		}
 
+		/// <summary>
+		/// Group the SubObjects into tiles using their centroids
+		/// </summary>
 		private void TileSubobjects()
 		{
 			tiles.Clear();
@@ -272,6 +304,9 @@ namespace TileBakeLibrary
 			}
 		}
 
+		/// <summary>
+		/// Parse the existing binary Tile files
+		/// </summary>
 		private void AddObjectsFromBinaryTile()
 		{
 			foreach (Tile tile in tiles)
@@ -372,11 +407,6 @@ namespace TileBakeLibrary
 			Console.WriteLine($"\nDuration: {elapsedTimeString}");
 		}
 
-		public void SetObjectFilters(CityObjectFilter[] cityObjectFilters)
-		{
-			this.cityObjectFilters = cityObjectFilters;
-		}
-
 		/// <summary>
 		/// Read SubObjects from existing binary tile file
 		/// </summary>
@@ -401,7 +431,8 @@ namespace TileBakeLibrary
 			int simplifying = 0;
 			int tiling = 0;
 			var filterObjectsBucket = new ConcurrentBag<SubObject>();
-			int[] indices = Enumerable.Range(0, cityObjectCount).ToArray(); ;
+			int[] indices = Enumerable.Range(0, cityObjectCount).ToArray();
+
 			//Turn cityobjects (and their children) into SubObject mesh data
 			var partitioner = Partitioner.Create(indices, EnumerablePartitionerOptions.NoBuffering);
 			Parallel.ForEach(partitioner, i =>
