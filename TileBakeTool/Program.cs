@@ -18,6 +18,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using TileBakeLibrary;
@@ -31,6 +32,8 @@ namespace TileBakeTool
         private static string sourcePathOverride = "";
         private static string outputPathOverride = "";
         private static float lodOverride = 1;
+
+        private static int peakLength = 20000;
 
         static void Main(string[] args)
         {
@@ -100,6 +103,9 @@ namespace TileBakeTool
         {
             switch (argument)
             {
+                case "--peak":
+                    PeakInFile(value);
+                    break;
                 case "--config":
                     ApplyConfigFileSettings(value);
                     break;
@@ -118,6 +124,25 @@ namespace TileBakeTool
                 default:
                     break;
             }
+        }
+
+        private static void PeakInFile(string filename)
+        {
+            if(!File.Exists(filename))
+            {
+                Console.WriteLine(filename + " does not exist. Cant peak.");
+                return;
+            }
+            using var stream = File.OpenRead(filename);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            char[] buffer = new char[peakLength];
+            int n = reader.ReadBlock(buffer, 0, peakLength);
+            char[] result = new char[n];
+
+            Array.Copy(buffer, result, n);
+            Console.WriteLine("");
+            Console.Write(result);
+            Console.WriteLine(".....");
         }
 
         /// <summary>
