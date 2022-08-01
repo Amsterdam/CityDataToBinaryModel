@@ -237,7 +237,7 @@ namespace TileBakeLibrary
             allSubObjects.Clear();
             allSubObjects = cityObjects;
 
-            Console.WriteLine($"\n{allSubObjects.Count} CityObjects imported");
+            Console.WriteLine($"\n{allSubObjects.Count} CityObjects with LOD{lod} were imported");
             PrepareTiles();
             WriteTileData();
 
@@ -438,8 +438,9 @@ namespace TileBakeLibrary
 			Parallel.ForEach(partitioner, i =>
 			{
 				Interlocked.Increment(ref parsing);
-				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
 				WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
+
+				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
 				var subObject = ToSubObjectMeshData(cityObject);
 				cityObject = null;
 				Interlocked.Decrement(ref parsing);
