@@ -91,6 +91,7 @@ namespace TileBakeLibrary
 		/// <param name="tilesize">Value used for width and height of the tiles</param>
 		public void SetTileSize(int tilesize)
 		{
+			Console.WriteLine($"Tilesize set to: {tilesize}x{tilesize}m");
 			tileSize = tilesize;
 		}
 
@@ -100,6 +101,7 @@ namespace TileBakeLibrary
 		/// <param name="targetLOD">Defaults to 0</param>
 		public void SetLOD(float targetLOD)
 		{
+			Console.WriteLine($"Filtering on LOD: {targetLOD}");
 			lod = targetLOD;
 		}
 
@@ -177,6 +179,14 @@ namespace TileBakeLibrary
 			//If no specific filename or wildcard was supplied, default to .json files
 			var filter = Path.GetFileName(sourcePath);
 			if (filter == "") filter = "*.json";
+
+			//Check if source path exists
+			if(!Directory.Exists(sourcePath))
+            {
+				Console.WriteLine($"Source path does not exist: {sourcePath}");
+				Console.WriteLine($"Aborted.");
+				return;
+            }
 
 			//List the files that we are going to parse
 			string[] sourceFiles = Directory.GetFiles(sourcePath, filter);
@@ -332,30 +342,28 @@ namespace TileBakeLibrary
 
 			Parallel.ForEach(tiles, tile =>
 			{
-				if (tile.SubObjects.Count == 0)
+				if (tile.SubObjects.Count == 0 || tile.filePath.Contains("NaN"))
 				{
 					Interlocked.Increment(ref skipped);		
 				}
 				else
 				{
 					BinaryMeshData bmd = new BinaryMeshData();
-					if (tile.filePath.Contains("NaN") == false)
-					{
-						bmd.ExportData(tile, exportUVCoordinates);
-					}
+					bmd.ExportData(tile, exportUVCoordinates);
 					Interlocked.Increment(ref written);
 				}
 				Interlocked.Increment(ref counter);
 				WriteBakingLog(counter, written, skipped, total);
 			});
 
+			WriteBakingLog(counter, written, skipped, total);
 			Console.WriteLine($"\n{written} tiles saved");
 		}
 
 		public static void WriteBakingLog(int done, int written, int skipped, int total)
         {
 			float percentageDone = ((float)done / total) * 100.0f;
-			Console.Write($"\rTile baking process: {(percentageDone):F0}% | Baked: {written} | Skipped empty tiles: {skipped}");
+			Console.Write($"\rTile baking process: {(percentageDone):F0}% | Baked: {written} | Skipped empty tiles: {skipped}" + "             ");
         }
 
 		/// <summary>
@@ -366,13 +374,18 @@ namespace TileBakeLibrary
 		public static void WriteCompressingLog(int done, int total)
 		{
 			float percentageDone = ((float)done / total) * 100.0f;
-			Console.WriteLine($"\rCompressing process: {(percentageDone):F0}% | Compressed: {done}/{total}");
+			Console.WriteLine($"\rCompressing process: {(percentageDone):F0}% | Compressed: {done}/{total}       ");
 		}
 
-		/// <summary>
-		/// Compress all files binary files in the output folder into brotli compressed files with .br extention 
-		/// </summary>
-		public void CompressFiles()
+		private static void WriteParsingStatusToConsole(int skipped, int done, int parsing, int simplifying, int tiling)
+        {
+            Console.Write("\rDone: " + done + " | Skipped: " + skipped + " | Parsing: " + parsing + " | Simplifying: " + simplifying + " | Tiling: " + tiling + "             ");
+        }
+
+        /// <summary>
+        /// Compress all files binary files in the output folder into brotli compressed files with .br extention 
+        /// </summary>
+        public void CompressFiles()
 		{
 			var filter = "*{lod}.bin";
 
@@ -382,7 +395,6 @@ namespace TileBakeLibrary
 			watch.Start();
 			int compressedCount = 0;
 			int totalcount = binFiles.Length;
-
 			if(totalcount == 0)
             {
 				Console.WriteLine("\nNo tile files found to compress. It appears no tiles were baked.");
@@ -505,11 +517,6 @@ namespace TileBakeLibrary
 			);
 
 			return filterObjectsBucket.ToList();
-		}
-
-		private static void WriteParsingStatusToConsole(int skipped, int done, int parsing, int simplifying, int tiling)
-		{
-			Console.Write("\rDone: " + done + " | Skipped: " + skipped + " | Parsing: " + parsing + " | Simplifying: " + simplifying + " | Tiling: " + tiling);
 		}
 
 		private SubObject ToSubObjectMeshData(CityObject cityObject)
