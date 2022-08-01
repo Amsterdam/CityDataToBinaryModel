@@ -128,7 +128,7 @@ namespace TileBakeTool
 			var tileBaker = new CityJSONToTileConverter();
 			tileBaker.SetSourcePath((sourcePathOverride != "") ? sourcePathOverride : configFile.sourceFolder);
 			tileBaker.SetTargetPath((outputPathOverride != "") ? outputPathOverride : configFile.outputFolder);
-			tileBaker.SetLOD(configFile.lod);
+			tileBaker.SetLOD((lodOverride != 1) ? lodOverride : configFile.lod);
 			tileBaker.SetVertexMergeAngleThreshold(configFile.mergeVerticesBelowAngle);
 			tileBaker.SetID(configFile.identifier, configFile.removePartOfIdentifier);
 			tileBaker.SetReplace(configFile.replaceExistingObjects);
