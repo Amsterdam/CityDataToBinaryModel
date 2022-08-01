@@ -218,8 +218,8 @@ namespace TileBakeLibrary
                 thread.Start();
 
 				//Start reading current CityJSON
-				Console.WriteLine($"\nProcessing file {filecounter}/{sourceFiles.Length}");
 				filecounter++;
+				Console.WriteLine($"\nProcessing file {filecounter}/{sourceFiles.Length}");
 				ReadCityJSON();
 
                 //Wait untill the thread reading the next CityJSON is read so we can start reading it
