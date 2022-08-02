@@ -93,6 +93,11 @@ namespace TileBakeTool
                 );
                 Console.WriteLine($"Loaded config file: {Path.GetFileName(configFilePath)}");
             }
+            else
+            {
+                Console.WriteLine($"Could not open config file.");
+                Console.WriteLine($"Please check if the path is correct: {configFilePath}");
+            }
         }
 
 
