@@ -38,11 +38,11 @@ Required parameter:
 
 --config <path to a .json config file>
 
-Optional options:
+Optional options with values:
 
---source <Override config path to source files>
---output <Override config path to output target>
---lod <Override config lod filter setting>
+--source <Source path that will override config path to source files>
+--output <Output path that will override config output path>
+--lod    <LOD value that will override the LOD filter set in the config file>
 
 Pipeline example 1
 TileBakeTool.exe --config Buildings.json

@@ -34,6 +34,7 @@ namespace TileBakeTool
         private static float lodOverride = 1;
 
         private static int peakLength = 20000;
+        private static bool waitForUserInputOnFinish = false;
 
         static void Main(string[] args)
         {
@@ -44,9 +45,10 @@ namespace TileBakeTool
             {
                 ShowHelp();
             }
-            //One parameter? Assume its a config file path
+            //One parameter? Assume its a config file path. (Dragging file on .exe)
             else if (args.Length == 1)
             {
+                waitForUserInputOnFinish = true;
                 ApplyConfigFileSettings(args[0]);
             }
             //More parameters? Parse them
@@ -103,9 +105,6 @@ namespace TileBakeTool
         {
             switch (argument)
             {
-                case "--peak":
-                    PeakInFile(value);
-                    break;
                 case "--config":
                     ApplyConfigFileSettings(value);
                     break;
@@ -120,6 +119,9 @@ namespace TileBakeTool
                 case "--lod":
                     lodOverride = float.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
                     Console.WriteLine($"LOD filter: {lodOverride}");
+                    break;
+                case "--peak":
+                    PeakInFile(value);
                     break;
                 default:
                     break;
@@ -168,6 +170,19 @@ namespace TileBakeTool
             tileBaker.TilingMethod = configFile.tilingMethod;
 
             tileBaker.Convert();
+
+            Console.WriteLine("TileBakeTool is done.");
+
+            if(!waitForUserInputOnFinish) 
+                WaitForUserInput();
+        }
+
+        private static void WaitForUserInput()
+        {
+            Console.WriteLine("Press <Enter> to exit");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+
+            Console.WriteLine("Closed.");
         }
 
 
