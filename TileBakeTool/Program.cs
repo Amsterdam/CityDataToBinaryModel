@@ -18,198 +18,184 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using TileBakeLibrary;
 
 namespace TileBakeTool
 {
-	class Program
-	{
-		private static string configFilePath = "";
-		private static ConfigFile configFile;
+    class Program
+    {
+        private static ConfigFile configFile;
 
-		private static string sourcePath = "";
-		private static string outputPath = "";
-		private static string newline = "\n";
+        private static string sourcePathOverride = "";
+        private static string outputPathOverride = "";
+        private static float lodOverride = 1;
 
-		private static string identifier = "id";
-		private static string removeFromIdentifier = "";
+        private static int peakLength = 20000;
+        private static bool waitForUserInputOnFinish = false;
 
-		private static bool replaceExistingIDs = false;
-		
-		private static bool createBrotliCompressedFiles = false;
-		private static bool createObjFiles = false;
-
-		private static bool exportUVCoordinates = false;
-		private static float lod = 0;
-		private static string filterType = "";
-
-		private static bool removeSpikes = false;
-		private static float mergeVerticesBelowAngle = 0;
-		private static float spikeCeiling = 0;
-		private static float spikeFloor = 0;
-
-		private static bool sliceGeometry = false;
-
-		static void Main(string[] args)
-		{
+        static void Main(string[] args)
+        {
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
+            //No parameters or an attempt to call for help? Show help in console.
             if (args.Length == 0 || (args.Length == 1 && args[0].ToLower().Contains("help")))
             {
-                //No parameters or an attempt to call for help? Show help in console.
                 ShowHelp();
             }
+            //One parameter? Assume its a config file path. (Dragging file on .exe)
             else if (args.Length == 1)
             {
-                //One parameter? Assume its a config file path
+                waitForUserInputOnFinish = true;
                 ApplyConfigFileSettings(args[0]);
             }
+            //More parameters? Parse them
             else
             {
-                //More parameters? Parse them
                 ParseArguments(args);
             }
 
             //If we received the minimal settings to start, start converting!
-            if (sourcePath != "" && outputPath != "")
-                StartConverting(sourcePath, outputPath);
+            if (configFile != null)
+                StartConverting();
+
+            Console.WriteLine("TileBakeTool is done.");
+            if (waitForUserInputOnFinish)
+                WaitForUserInput();
         }
 
-        private static void DefaultArgument(string sourcePath)
-		{
-			if(!Path.IsPathFullyQualified(sourcePath)){
-				Console.WriteLine($"Not a valid path: {sourcePath}");
-				Console.WriteLine($"This might help: ");
-				ShowHelp();
-				return;
-			}
+        private static void ParseArguments(string[] args)
+        {
+            //Read the arguments and apply corresponding settings
+            for (int i = 0; i < args.Length; i++)
+            {
+                var argument = args[i];
+                if (argument.Contains("--"))
+                {
+                    var value = (i + 1 < args.Length) ? args[i + 1] : "";
+                    ApplySetting(argument, value);
+                }
+            }
+        }
 
-			StartConverting(sourcePath, sourcePath);
-		}
+        /// <summary>
+        /// Load a .json config file and apply it to our settings object
+        /// </summary>
+        /// <param name="configFilePath">Path to config file</param>
+        private static void ApplyConfigFileSettings(string configFilePath)
+        {
+            if (File.Exists(configFilePath))
+            {
+                var configJsonText = File.ReadAllText(configFilePath);
+                configFile = JsonSerializer.Deserialize<ConfigFile>(configJsonText
+                , new JsonSerializerOptions()
+                {
+                    AllowTrailingCommas = true
+                }
+                );
+                Console.WriteLine($"Loaded config file: {Path.GetFileName(configFilePath)}");
+            }
+            else
+            {
+                Console.WriteLine($"Could not open config file.");
+                Console.WriteLine($"Please check if the path is correct: {configFilePath}");
+            }
+        }
 
-		private static void ParseArguments(string[] args)
-		{
-			//Read the arguments and apply corresponding settings
-			for (int i = 0; i < args.Length; i++)
-			{
-				var argument = args[i];
-				if (argument.Contains("--")){
-					var value = (i + 1 < args.Length) ? args[i + 1] : "";
-					ApplySetting(argument,value);
-				}
-			}
-		}
 
-		private static void ApplyConfigFileSettings(string configFilePath){
-			if(File.Exists(configFilePath))
-			{
-				var configJsonText = File.ReadAllText(configFilePath);
-				configFile = JsonSerializer.Deserialize<ConfigFile>(configJsonText
-				, new JsonSerializerOptions()
-				{ 
-					AllowTrailingCommas = true }
-				);
+        /// <summary>
+        /// Apply commandline parameters as settings
+        /// </summary>
+        /// <param name="argument">Commandline parameter argument</param>
+        /// <param name="value">Commandline parameter value</param>
+        private static void ApplySetting(string argument, string value)
+        {
+            switch (argument)
+            {
+                case "--config":
+                    ApplyConfigFileSettings(value);
+                    break;
+                case "--source":
+                    sourcePathOverride = value;
+                    Console.WriteLine($"Source: {value}");
+                    break;
+                case "--output":
+                    outputPathOverride = value;
+                    Console.WriteLine($"Output directory: {value}");
+                    break;
+                case "--lod":
+                    lodOverride = float.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+                    Console.WriteLine($"LOD filter: {lodOverride}");
+                    break;
+                case "--peak":
+                    PeakInFile(value);
+                    break;
+                default:
+                    break;
+            }
+        }
 
-				sourcePath = configFile.sourceFolder;
-				outputPath = configFile.outputFolder;
+        private static void PeakInFile(string filename)
+        {
+            if(!File.Exists(filename))
+            {
+                Console.WriteLine(filename + " does not exist. Cant peak.");
+                return;
+            }
+            using var stream = File.OpenRead(filename);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            char[] buffer = new char[peakLength];
+            int n = reader.ReadBlock(buffer, 0, peakLength);
+            char[] result = new char[n];
 
-				removeSpikes = configFile.removeSpikes;
-				spikeCeiling = configFile.removeSpikesAbove;
-				spikeFloor = configFile.removeSpikesBelow;
-				replaceExistingIDs = configFile.replaceExistingObjects;
-				mergeVerticesBelowAngle = configFile.mergeVerticesBelowAngle;
-				identifier = configFile.identifier;
-				removeFromIdentifier = configFile.removePartOfIdentifier;
-				exportUVCoordinates = configFile.exportUVCoordinates;
-				if (configFile.lod != 0.0f) lod = configFile.lod;
-				createBrotliCompressedFiles = configFile.brotliCompression;
+            Array.Copy(buffer, result, n);
+            Console.WriteLine("");
+            Console.Write(result);
+            Console.WriteLine(".....");
+        }
 
-				sliceGeometry = (configFile.tilingMethod == "SLICED"); //TILED or SLICED
+        /// <summary>
+        /// Start the converting process using the current configuration
+        /// </summary>
+        private static void StartConverting()
+        {
+            Console.WriteLine("Starting...");
 
-				Console.WriteLine($"Loaded config file with settings");
-			}
-		}
+            //Here we use the .dll. This way we may use this library in Unity, or an Azure C# Function
+            var tileBaker = new CityJSONToTileConverter();
+            tileBaker.SetSourcePath((sourcePathOverride != "") ? sourcePathOverride : configFile.sourceFolder);
+            tileBaker.SetTargetPath((outputPathOverride != "") ? outputPathOverride : configFile.outputFolder);
+            tileBaker.SetLOD((lodOverride != 1) ? lodOverride : configFile.lod);
+            tileBaker.SetVertexMergeAngleThreshold(configFile.mergeVerticesBelowAngle);
+            tileBaker.SetID(configFile.identifier, configFile.removePartOfIdentifier);
+            tileBaker.SetReplace(configFile.replaceExistingObjects);
+            tileBaker.SetExportUV(configFile.exportUVCoordinates);
+            tileBaker.AddBrotliCompressedFile(configFile.brotliCompression);
+            tileBaker.SetClipSpikes(configFile.removeSpikes, configFile.removeSpikesAbove, configFile.removeSpikesBelow);
+            tileBaker.SetObjectFilters(configFile.cityObjectFilters);
+            tileBaker.SetTileSize(configFile.tileSize);
+            tileBaker.TilingMethod = configFile.tilingMethod;
 
-		private static void ApplySetting(string argument, string value)
-		{
-			switch (argument)
-			{
-				case "--config":
-					ApplyConfigFileSettings(value);
-					break;
-				case "--source":
-					sourcePath = value;
-					Console.WriteLine($"Source: {value}");
-					break;
-				case "--output":
-					outputPath = value;
-					Console.WriteLine($"Output directory: {value}");
-					break;
-				case "--replace":
-					replaceExistingIDs = true;
-					Console.WriteLine($"Replacing existing IDs");
-					break;
-				case "--lod":
-					lod = float.Parse(value,System.Globalization.CultureInfo.InvariantCulture);
-					Console.WriteLine($"LOD filter: {lod}");
-					break;
-				case "--type":
-					filterType = value;
-					Console.WriteLine($"Type filter: {filterType}");
-					break;
-				case "--id":
-					identifier = value;
-					Console.WriteLine($"Object identifier: {identifier}");
-					break;
-				case "--id-remove":
-					removeFromIdentifier = value;
-					Console.WriteLine($"Remove from identifier: {removeFromIdentifier}");
-					break;
-				case "--brotli":
-					createBrotliCompressedFiles = true;
-					break;
-				case "--obj":
-					createObjFiles = true;
-					break;
-				default:
-					
-					break;
-			}
-		}
+            tileBaker.Convert();
+        }
 
-		private static void StartConverting(string sourcePath, string targetPath)
-		{
-			Console.WriteLine("Starting...");
+        private static void WaitForUserInput()
+        {
+            Console.WriteLine("Press <Enter> to exit");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
 
-			//Here we use the .dll. This usage is the same as in Unity3D.
-			var tileBaker = new CityJSONToTileConverter();
-			tileBaker.SetSourcePath(sourcePath);
-			tileBaker.SetTargetPath(targetPath);
-			tileBaker.SetLOD(lod);
-			tileBaker.SetVertexMergeAngleThreshold(mergeVerticesBelowAngle);
-			tileBaker.SetFilterType(filterType);
-			tileBaker.SetID(identifier, removeFromIdentifier);
-			tileBaker.SetReplace(replaceExistingIDs);
-			tileBaker.SetExportUV(exportUVCoordinates);
-			tileBaker.CreateOBJ(createObjFiles);
-			tileBaker.AddBrotliCompressedFile(createBrotliCompressedFiles);
-			
-			if (configFile != null)
-			{
-				tileBaker.SetClipSpikes(removeSpikes, spikeCeiling, spikeFloor);
-				tileBaker.SetObjectFilters(configFile.cityObjectFilters);
-				tileBaker.SetTileSize(configFile.tileSize);
-				tileBaker.TilingMethod = configFile.tilingMethod;
-			}
+            Console.WriteLine("Closed.");
+        }
 
-			tileBaker.Convert();
-		}
 
-		private static void ShowHelp()
-		{
-			Console.Write(Constants.helpText);
-		}
-	}
+        /// <summary>
+        /// Draw the help text in the commandline
+        /// </summary>
+        private static void ShowHelp()
+        {
+            Console.Write(Constants.helpText);
+        }
+    }
 }

@@ -781,7 +781,7 @@ namespace Bunny83.SimpleJSON
                     {
                         i = 0;
                         string percentage = ((int)(100 * streamReader.BaseStream.Position / bytelength)).ToString();
-                        Console.Write($"\rreading file ... { percentage}%");
+                        Console.Write($"\rReading {Path.GetFileName(fileName)} ... { percentage}%");
                     }
                     switch (str)
                     {
