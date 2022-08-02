@@ -60,6 +60,10 @@ namespace TileBakeTool
             //If we received the minimal settings to start, start converting!
             if (configFile != null)
                 StartConverting();
+
+            Console.WriteLine("TileBakeTool is done.");
+            if (waitForUserInputOnFinish)
+                WaitForUserInput();
         }
 
         private static void ParseArguments(string[] args)
@@ -175,11 +179,6 @@ namespace TileBakeTool
             tileBaker.TilingMethod = configFile.tilingMethod;
 
             tileBaker.Convert();
-
-            Console.WriteLine("TileBakeTool is done.");
-
-            if(!waitForUserInputOnFinish) 
-                WaitForUserInput();
         }
 
         private static void WaitForUserInput()
