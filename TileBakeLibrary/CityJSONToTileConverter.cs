@@ -387,7 +387,7 @@ namespace TileBakeLibrary
         /// </summary>
         public void CompressFiles()
 		{
-			var filter = "*{lod}.bin";
+			var filter = $"*{lod}.bin";
 
 			//List the files that we are going to parse
 			string[] binFiles = Directory.GetFiles(Path.GetDirectoryName(outputPath), filter);
