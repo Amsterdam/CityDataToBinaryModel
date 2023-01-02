@@ -112,7 +112,7 @@ namespace TileBakeLibrary
 		/// <param name="remove">Remove this substring from the ID before storing it</param>
 		public void SetID(string id, string remove)
 		{
-			Console.WriteLine($"Identifier used as ID: {id}.{((remove.Length>0) ? $"The '{remove}' part will be removed from the ID." : "")}");
+			Console.WriteLine($"Identifier used as ID: {id}.{((remove.Length>0) ? $" The '{remove}' part will be removed from the ID." : "")}");
 			identifier = id;
 			removeFromID = remove;
 		}
