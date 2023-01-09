@@ -4,7 +4,7 @@
 	"replaceExistingObjects":false,
 	"identifier":"objectid",
 	"removePartOfIdentifier":"",
-	"lod":1,
+	"lod":1.2,
 	"tilingMethod":"TILED",
 	"tileSize":1000,
 	"removeSpikes":true,
