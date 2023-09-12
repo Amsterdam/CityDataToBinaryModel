@@ -31,11 +31,11 @@ jobs:
     - name: Build Release
       run: | 
         if [ "$RUNNER_OS" == "Windows" ]; then
-          dotnet build YourProject/YourProject.csproj --configuration --verbosity normal Release --output ./windows-publish
+          dotnet build TileBakeTool/TileBakeTool.csproj --configuration --verbosity normal Release --output ./windows-publish
         elif [ "$RUNNER_OS" == "Linux" ]; then
-          dotnet build YourProject/YourProject.csproj --configuration --verbosity normal Release --output ./linux-publish
+          dotnet build TileBakeTool/TileBakeTool.csproj --configuration --verbosity normal Release --output ./linux-publish
         else
-          dotnet build YourProject/YourProject.csproj --configuration --verbosity normal Release --output ./macos-publish
+          dotnet build TileBakeTool/TileBakeTool.csproj --configuration --verbosity normal Release --output ./macos-publish
         fi
     
     - name: Publish Windows Artifacts
