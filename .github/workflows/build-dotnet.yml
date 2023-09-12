@@ -30,10 +30,31 @@ jobs:
 
     - name: Build Release
       run: | 
-        dotnet build TileBakeTool/TileBakeTool.csproj --no-restore --verbosity normal --configuration Release --output ./publish
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          dotnet build YourProject/YourProject.csproj --configuration --verbosity normal Release --output ./windows-publish
+        elif [ "$RUNNER_OS" == "Linux" ]; then
+          dotnet build YourProject/YourProject.csproj --configuration --verbosity normal Release --output ./linux-publish
+        else
+          dotnet build YourProject/YourProject.csproj --configuration --verbosity normal Release --output ./macos-publish
+        fi
     
-    - name: Publish Build Artifacts
+    - name: Publish Windows Artifacts
+      if: runner.os == 'Windows'
       uses: actions/upload-artifact@v2
       with:
-        name: build-artifacts
-        path: ./publish
+        name: windows-artifacts
+        path: ./windows-publish
+
+    - name: Publish Linux Artifacts
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-artifacts
+        path: ./linux-publish
+
+    - name: Publish macOS Artifacts
+      if: runner.os == 'macOS'
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-artifacts
+        path: ./macos-publish
