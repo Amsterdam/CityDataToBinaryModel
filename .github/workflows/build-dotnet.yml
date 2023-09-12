@@ -1,7 +1,7 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET
+name: .NET cross-platform builds for Windows, Linux and MacOS
 
 on:
   push:
@@ -28,16 +28,23 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore TileBakeTool/TileBakeTool.csproj
 
+    #Build for platform
     - name: Build Release
+      if: runner.os == 'Windows'
       run: | 
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          dotnet build TileBakeTool/TileBakeTool.csproj --configuration --verbosity normal Release --output ./windows-publish
-        elif [ "$RUNNER_OS" == "Linux" ]; then
-          dotnet build TileBakeTool/TileBakeTool.csproj --configuration --verbosity normal Release --output ./linux-publish
-        else
-          dotnet build TileBakeTool/TileBakeTool.csproj --configuration --verbosity normal Release --output ./macos-publish
-        fi
+          dotnet build TileBakeTool/TileBakeTool.csproj --configuration Release --output ./windows-publish --verbosity normal 
+
+    - name: Build Release
+      if: runner.os == 'Linux'
+      run: | 
+          dotnet build TileBakeTool/TileBakeTool.csproj --configuration Release --output ./linux-publish --verbosity normal 
     
+    - name: Build Release
+      if: runner.os == 'macOS'
+      run: | 
+          dotnet build TileBakeTool/TileBakeTool.csproj --configuration Release --output ./macos-publish --verbosity normal 
+
+    #Publish artifact
     - name: Publish Windows Artifacts
       if: runner.os == 'Windows'
       uses: actions/upload-artifact@v2
