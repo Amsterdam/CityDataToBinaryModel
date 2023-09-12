@@ -24,7 +24,7 @@ jobs:
       run: dotnet restore TileBakeTool/TileBakeTool.csproj
     - name: Build Release
       run: | 
-        dotnet build TileBakeTool/TileBakeTool.csproj --no-restore --verbosity normal --configuration Release --output ./publish
+        dotnet build TileBakeTool/TileBakeTool.csproj --no-restore --verbosity normal --self-contained --configuration Release --output ./publish
     - name: Publish Build Artifacts
       uses: actions/upload-artifact@v2
       with:
