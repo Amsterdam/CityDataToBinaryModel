@@ -466,7 +466,12 @@ namespace TileBakeLibrary
 				}
 				WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
 
-				if (subObject.maxVerticesPerSquareMeter > 0)
+                if (clipSpikes)
+                {
+                    subObject.ClipSpikes(spikeCeiling, spikeFloor);
+                }
+
+                if (subObject.maxVerticesPerSquareMeter > 0)
 				{
 					Interlocked.Increment(ref simplifying);
 					WriteParsingStatusToConsole(skipped, done, parsing, simplifying, tiling);
@@ -478,10 +483,6 @@ namespace TileBakeLibrary
 				{
 					//Always merge based on VertexNormalCombination.normalAngleComparisonThreshold
 					subObject.MergeSimilarVertices();
-				}
-				if (clipSpikes)
-				{
-					subObject.ClipSpikes(spikeCeiling, spikeFloor);
 				}
 
 				if (TilingMethod == "TILED")
