@@ -32,36 +32,36 @@ jobs:
     - name: Build Release
       if: runner.os == 'Windows'
       run: | 
-          dotnet build TileBakeTool/TileBakeTool.csproj --configuration Release --output ./windows-publish --verbosity normal 
+          dotnet publish TileBakeTool/TileBakeTool.csproj --configuration Release --output ./windows-publish --verbosity normal 
 
     - name: Build Release
       if: runner.os == 'Linux'
       run: | 
-          dotnet build TileBakeTool/TileBakeTool.csproj --configuration Release --output ./linux-publish --verbosity normal 
+          dotnet publish TileBakeTool/TileBakeTool.csproj --configuration Release --output ./linux-publish --verbosity normal 
     
     - name: Build Release
       if: runner.os == 'macOS'
       run: | 
-          dotnet build TileBakeTool/TileBakeTool.csproj --configuration Release --output ./macos-publish --verbosity normal 
+          dotnet publish TileBakeTool/TileBakeTool.csproj --configuration Release --output ./macos-publish --verbosity normal 
 
     #Publish artifact
     - name: Publish Windows Artifacts
       if: runner.os == 'Windows'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: windows-artifacts
         path: ./windows-publish
 
     - name: Publish Linux Artifacts
       if: runner.os == 'Linux'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: linux-artifacts
         path: ./linux-publish
 
     - name: Publish macOS Artifacts
       if: runner.os == 'macOS'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: macos-artifacts
         path: ./macos-publish
