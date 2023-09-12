@@ -24,12 +24,9 @@ jobs:
       run: dotnet restore TileBakeTool/TileBakeTool.csproj
     - name: Build Release
       run: | 
-        dotnet build TileBakeTool/TileBakeTool.csproj --no-restore --verbosity detailed --configuration Release
-        echo "Build output path: $(pwd)/TileBakeTool/bin/Release/"
-    - name: Test
-      run: dotnet test TileBakeTool/TileBakeTool.csproj --no-build --verbosity detailed
+        dotnet build TileBakeTool/TileBakeTool.csproj --no-restore --verbosity normal --configuration Release --output ./publish
     - name: Publish Build Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: build-artifacts
-        path: $(pwd)/TileBakeTool/bin/Release/
+        path: ./publish
