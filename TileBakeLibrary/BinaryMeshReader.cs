@@ -27,7 +27,7 @@ using TileBakeLibrary.BinaryMesh;
 
 namespace TileBakeLibrary
 {
-	class BinaryMeshReader
+	public class BinaryMeshReader
 	{
         public static MeshData ReadBinaryMesh(string filename)
         {

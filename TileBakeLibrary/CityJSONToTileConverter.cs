@@ -260,6 +260,8 @@ namespace TileBakeLibrary
             allSubObjects.Clear();
             allSubObjects = cityObjects;
 
+            Console.WriteLine($"\n{allSubObjects.Count} CityObjects with LOD{lod} were imported");
+
 			//write warnings to log newlines
 			if(warnings.Count > 0)
 				File.AppendAllText(logFileName, $"Warnings for {cityJson.sourceFilePath}\n");
@@ -268,8 +270,8 @@ namespace TileBakeLibrary
 				File.AppendAllText(logFileName, warning + "\n");
 			}
 			File.AppendAllText(logFileName, "\n");
-			
-            Console.WriteLine($"\n{allSubObjects.Count} CityObjects with LOD{lod} were imported");
+
+			//Tile the objects
             PrepareTiles();
             WriteTileData();
 
