@@ -101,6 +101,7 @@ namespace TileBakeLibrary
 			{
 				mesh.AppendTriangle(triangleIndices[i], triangleIndices[i + 1], triangleIndices[i + 2]);
 			}
+			
 
 			if(skipTrianglesBelowArea > 0)
             {

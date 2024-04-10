@@ -179,26 +179,16 @@ namespace Netherlands3D.CityJSON
 				{
 					if (geometrynode["type"] == "Solid")
 					{
-						JSONNode exteriorshell = geometrynode["boundaries"][0];
-						foreach (JSONNode surfacenode in exteriorshell)
-						{
-							surfaces.Add(ReadSurfaceVectors(surfacenode));
-						}
-						JSONNode interiorshell = geometrynode[0][1];
-						if (interiorshell != null)
-						{
-							foreach (JSONNode surfacenode in interiorshell)
-							{
-								surfaces.Add(ReadSurfaceVectors(surfacenode));
-							}
-						}
+						JSONNode boundaries = geometrynode["boundaries"];
+						surfaces = ReadSolid(geometrynode);
 					}
-					if (geometrynode["type"] == "MultiSurface")
+					else if (geometrynode["type"] == "MultiSurface")
 					{
-						foreach (JSONNode surfacenode in geometrynode["boundaries"])
-						{
-							surfaces.Add(ReadSurfaceVectors(surfacenode));
-						}
+						surfaces = ReadMultiSurface(geometrynode);
+					}
+					else
+					{
+						Console.WriteLine($"Unknown geometry type: {geometrynode["type"]}");
 					}
 
 					//read textureValues
@@ -299,50 +289,12 @@ namespace Netherlands3D.CityJSON
 			JSONNode boundariesNode = geometrynode["boundaries"];
 			List<Surface> result = new List<Surface>();
 
-			foreach (JSONNode node in boundariesNode[0])
+			//Read exterior shell
+			foreach (JSONNode surfacenode in boundariesNode[0])
 			{
-				Surface surf = new Surface();
-				foreach (JSONNode vertexnode in node[0])
-				{
-					surf.outerRing.Add(vertices[vertexnode.AsInt]);
-				}
-				result.Add(surf);
-			}
-			JSONNode semanticsnode = geometrynode["semantics"];
-			JSONNode ValuesNode = semanticsnode["values"][0];
-			for (int i = 0; i < ValuesNode.Count; i++)
-			{
-				result[i].SurfaceType = geometrynode["semantics"]["surfaces"][ValuesNode[i].AsInt]["type"];
-				result[i].semantics = ReadSemantics(geometrynode["semantics"]["surfaces"][ValuesNode[i].AsInt]);
+				result.Add(ReadSurfaceVectors(surfacenode));
 			}
 
-			if (geometrynode["texture"] != null)
-			{
-				Surfacetexture surfacematerial = null;
-				int counter = 0;
-				foreach (JSONNode node in geometrynode["texture"][0][0])
-				{
-					List<Vector2> indices = new List<Vector2>();
-					for (int i = 0; i < node[0][0].Count; i++)
-					{
-						JSONNode item = node[0][0][i];
-
-						if (surfacematerial is null)
-						{
-							surfacematerial = Textures[item.AsInt];
-							result[i].surfacetexture = surfacematerial;
-						}
-						else
-						{
-							indices.Add(textureVertices[item.AsInt]);
-						}
-
-					}
-					indices.Reverse();
-					result[counter].outerringUVs = indices;
-					counter++;
-				}
-			}
 			return result;
 		}
 
@@ -430,14 +382,19 @@ namespace Netherlands3D.CityJSON
 				verts.Add(vertices[vectornode.AsInt]);
 			}
 			surf.outerRing = verts;
+
+			int maxHoles = 3;
 			for (int i = 1; i < surfacenode.Count; i++)
 			{
+				if(i > maxHoles) return surf;
+
 				verts = new List<Vector3Double>();
 				foreach (JSONNode vectornode in surfacenode[i])
 				{
 					verts.Add(vertices[vectornode.AsInt]);
 				}
-				surf.innerRings.Add(verts);
+
+				surf.innerRings.Add(verts);	
 			}
 
 			return surf;

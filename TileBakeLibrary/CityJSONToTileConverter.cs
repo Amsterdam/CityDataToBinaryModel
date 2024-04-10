@@ -707,7 +707,7 @@ namespace TileBakeLibrary
 					continue;
 				}
 				//Poly2Mesh takes care of calculating normals, using a right-handed coordinate system
-				Poly2Mesh.CreateMeshData(poly, out surfaceVertices, out surfaceNormals, out surfaceIndices, out surfaceUvs);
+				Poly2Mesh.CreateMeshData(poly, out surfaceVertices, out surfaceNormals, out surfaceIndices, out surfaceUvs, cityObject);
 
 				var offset = vertexlist.Count + subObject.vertices.Count;
 

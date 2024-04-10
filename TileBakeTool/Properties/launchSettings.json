@@ -2,7 +2,7 @@
   "profiles": {
     "TileBakeTool": {
       "commandName": "Project",
-      "commandLineArgs": "--config \"C:/Projects/GemeenteAmsterdam/Solution/TileBakeTool_SourceData/3DBag.json\""
+      "commandLineArgs": "--config \"C:/Users/samba/Desktop/TileBakeTool_SourceData/3DBag.json\""
     }
   }
 }
