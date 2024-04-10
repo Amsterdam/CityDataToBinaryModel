@@ -180,11 +180,11 @@ namespace Netherlands3D.CityJSON
 					if (geometrynode["type"] == "Solid")
 					{
 						JSONNode boundaries = geometrynode["boundaries"];
-						surfaces = ReadSolid(geometrynode);
+						surfaces = ReadSolid(geometrynode, cityObject);
 					}
 					else if (geometrynode["type"] == "MultiSurface")
 					{
-						surfaces = ReadMultiSurface(geometrynode);
+						surfaces = ReadMultiSurface(geometrynode, cityObject);
 					}
 					else
 					{
@@ -284,21 +284,21 @@ namespace Netherlands3D.CityJSON
 			return cityObject;
 		}
 
-		private List<Surface> ReadSolid(JSONNode geometrynode)
+		private List<Surface> ReadSolid(JSONNode geometrynode, CityObject sourceCityObject)
 		{
 			JSONNode boundariesNode = geometrynode["boundaries"];
 			List<Surface> result = new List<Surface>();
 
 			//Read exterior shell
 			foreach (JSONNode surfacenode in boundariesNode[0])
-			{
-				result.Add(ReadSurfaceVectors(surfacenode));
+			{		
+				result.Add(ReadSurfaceVectors(surfacenode,sourceCityObject,true,true));
 			}
 
 			return result;
 		}
 
-		private List<Surface> ReadMultiSurface(JSONNode geometrynode)
+		private List<Surface> ReadMultiSurface(JSONNode geometrynode, CityObject sourceCityObject)
 		{
 			JSONNode boundariesNode = geometrynode["boundaries"];
 			List<Surface> result = new List<Surface>();
@@ -372,31 +372,40 @@ namespace Netherlands3D.CityJSON
 			}
 			return surf;
 		}
-		private Surface ReadSurfaceVectors(JSONNode surfacenode)
+		private Surface ReadSurfaceVectors(JSONNode surfacenode, CityObject sourceCityObject, bool createOuterRing = true, bool createInnerRings = true)
 		{
 			Surface surf = new Surface();
 			//read exteriorRing
 			List<Vector3Double> verts = new List<Vector3Double>();
-			foreach (JSONNode vectornode in surfacenode[0])
-			{
-				verts.Add(vertices[vectornode.AsInt]);
-			}
-			surf.outerRing = verts;
 
-			int maxHoles = 3;
+			if(createOuterRing)
+			{
+				foreach (JSONNode vectornode in surfacenode[0])
+				{
+					verts.Add(vertices[vectornode.AsInt]);
+				}
+				surf.outerRing = verts;	
+			}			
+
+			if(!createInnerRings)
+				return surf;
 			for (int i = 1; i < surfacenode.Count; i++)
 			{
-				if(i > maxHoles) return surf;
-
 				verts = new List<Vector3Double>();
 				foreach (JSONNode vectornode in surfacenode[i])
 				{
 					verts.Add(vertices[vectornode.AsInt]);
 				}
 
-				surf.innerRings.Add(verts);	
+				//Only more than triangle as holes
+				if(verts.Count > 3) {
+					surf.innerRings.Add(verts);	
+				}
+				else{
+					sourceCityObject.warnings += "- Holes in surface detected, but not supported. Ignoring holes.\n";
+				}
 			}
-
+			
 			return surf;
 		}
 
@@ -422,6 +431,8 @@ namespace Netherlands3D.CityJSON
 		public List<CityObject> children;
 		public string cityObjectType;
 		public string keyName = "";
+
+		public string warnings = "";
 
 		public CityObject()
 		{

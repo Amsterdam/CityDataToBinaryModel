@@ -34,6 +34,7 @@ namespace TileBakeLibrary
 {
 	public class CityJSONToTileConverter
 	{
+		private string logFileName = "";
 		private string sourcePath = "";
 		private string outputPath = "";
 		private string identifier = "";
@@ -177,6 +178,13 @@ namespace TileBakeLibrary
 		/// 
 		public void Convert()
 		{
+			//Create log file (overwrite)
+			var readableDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH_mm");
+			var currentPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);	
+
+			logFileName = currentPath + "/bakelog" + readableDateTime + ".txt";
+			File.WriteAllText(logFileName, string.Empty);
+
 			//If no specific filename or wildcard was supplied, default to .json files
 			var filter = Path.GetFileName(sourcePath);
 			if (filter == "") filter = "*.json";
@@ -227,12 +235,14 @@ namespace TileBakeLibrary
                 thread.Join();
                 cityJson = nextCityJSON;
             }
+			Console.WriteLine($"Log file: {currentPath}/bakelog{readableDateTime}.txt");
 
 			//Optional compressed variant
             if (brotliCompress)
 			{
 				CompressFiles();
 			}
+			Console.WriteLine($"Log file: {currentPath}/bakelog{readableDateTime}.txt");
 		}
 
 		/// <summary>
@@ -244,10 +254,21 @@ namespace TileBakeLibrary
             watch.Start();
             tiles = new List<Tile>();
          
-            var cityObjects = CityJSONParseProcess(cityJson);
+			//Warnings bag
+			var warnings = new ConcurrentBag<string>();
+            var cityObjects = CityJSONParseProcess(cityJson, warnings);
             allSubObjects.Clear();
             allSubObjects = cityObjects;
 
+			//write warnings to log newlines
+			if(warnings.Count > 0)
+				File.AppendAllText(logFileName, $"Warnings for {cityJson.sourceFilePath}\n");
+			foreach (var warning in warnings)
+			{
+				File.AppendAllText(logFileName, warning + "\n");
+			}
+			File.AppendAllText(logFileName, "\n");
+			
             Console.WriteLine($"\n{allSubObjects.Count} CityObjects with LOD{lod} were imported");
             PrepareTiles();
             WriteTileData();
@@ -430,7 +451,7 @@ namespace TileBakeLibrary
 			bmd = null;
 		}
 
-		private List<SubObject> CityJSONParseProcess(CityJSON cityJson)
+		private List<SubObject> CityJSONParseProcess(CityJSON cityJson, ConcurrentBag<string> warnings)
 		{
 			List<SubObject> filteredObjects = new List<SubObject>();
 			Console.WriteLine("");
@@ -444,6 +465,7 @@ namespace TileBakeLibrary
 			int simplifying = 0;
 			int tiling = 0;
 			var filterObjectsBucket = new ConcurrentBag<SubObject>();
+			var failedSubObjects = new ConcurrentBag<string>();
 			int[] indices = Enumerable.Range(0, cityObjectCount).ToArray();
 
 			//Turn cityobjects (and their children) into SubObject mesh data
@@ -455,9 +477,15 @@ namespace TileBakeLibrary
 
 				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
 				var subObject = ToSubObjectMeshData(cityObject);
+				
+				if(!string.IsNullOrEmpty(cityObject.warnings))
+				{
+					warnings.Add(cityObject.keyName + ":\n" + cityObject.warnings);
+				}
+
 				cityObject = null;
 				Interlocked.Decrement(ref parsing);
-				cityObject = null;
+	
 				if (subObject == null)
 				{
 					Interlocked.Increment(ref done);
