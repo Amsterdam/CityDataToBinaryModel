@@ -478,10 +478,12 @@ namespace TileBakeLibrary
 				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
 				var subObject = ToSubObjectMeshData(cityObject);
 				
-				if(!string.IsNullOrEmpty(cityObject.warnings))
-				{
-					warnings.Add(cityObject.keyName + ":\n" + cityObject.warnings);
-				}
+				//Collect warnings for log
+				if(!string.IsNullOrEmpty(cityObject.holeWarnings))
+					warnings.Add(cityObject.keyName + ":\n" + cityObject.holeWarnings);
+				
+				if(!string.IsNullOrEmpty(cityObject.triangulationWarnings))
+					warnings.Add(cityObject.keyName + ":\n" + cityObject.holeWarnings);
 
 				cityObject = null;
 				Interlocked.Decrement(ref parsing);

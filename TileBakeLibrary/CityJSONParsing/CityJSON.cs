@@ -402,7 +402,7 @@ namespace Netherlands3D.CityJSON
 					surf.innerRings.Add(verts);	
 				}
 				else{
-					sourceCityObject.warnings += "- Holes in surface detected, but not supported. Ignoring holes.\n";
+					sourceCityObject.holeWarnings += "- Found a hole with less than 3 vertices, skipping this hole.\n";
 				}
 			}
 			
@@ -432,7 +432,8 @@ namespace Netherlands3D.CityJSON
 		public string cityObjectType;
 		public string keyName = "";
 
-		public string warnings = "";
+		public string holeWarnings = "";
+		public string triangulationWarnings = "";
 
 		public CityObject()
 		{

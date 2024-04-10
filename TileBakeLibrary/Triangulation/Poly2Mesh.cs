@@ -266,7 +266,7 @@ namespace JoeStrout
             {
                 Console.WriteLine("Failed to triangulate polygon: " + e.Message);
                 Console.WriteLine("With name: " + cityObject.keyName);
-                cityObject.warnings += "- Failed to triangulate polygon: " + e.Message + "\n";
+                cityObject.triangulationWarnings += "- Failed to triangulate polygon: " + e.Message + "\n";
                 return;
             }
             // Now, to get back to our original positions, use our code-to-position map.  We do

@@ -50,7 +50,6 @@ namespace TileBakeLibrary
 			Vector2 uv = new Vector2(0,0);
 			int oldIndex = 0;
 			int newIndex = 0;
-
 			
 			Dictionary<VertexNormalCombination,int> vertexNormalCombinations = new Dictionary<VertexNormalCombination,int>();
             for (int i = 0; i < triangleIndices.Count; i++)
@@ -236,18 +235,17 @@ namespace TileBakeLibrary
                 }
 				else
 				{ 
-                for (int y = localYmin; y < localYmax; y += (int)size.Y)
-                {
-                    SubObject newSubobject = ClipMesh(columnMesh, x, y,size.Y);
-                    if (newSubobject != null)
-                    {
+					for (int y = localYmin; y < localYmax; y += (int)size.Y)
+					{
+						SubObject newSubobject = ClipMesh(columnMesh, x, y,size.Y);
+						if (newSubobject != null)
+						{
 
-                        subObjects.Add(newSubobject);
-                    }
-                }
+							subObjects.Add(newSubobject);
+						}
+					}
 				}
 			}
-
 
             return subObjects;
 		}
