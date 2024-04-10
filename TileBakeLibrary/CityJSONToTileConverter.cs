@@ -684,7 +684,6 @@ namespace TileBakeLibrary
 					{
 						normallist.AddRange(defaultnormalList);
 					}
-
 					continue;
 				}
 
