@@ -59,6 +59,7 @@ namespace TileBakeLibrary
 		private float spikeCeiling = 0;
 		private float spikeFloor = 0;
 
+		private int minHoleVertices = 4;
 		private int filecounter = 0;
 		private int totalFiles = 0;
 
@@ -84,6 +85,11 @@ namespace TileBakeLibrary
 			clipSpikes = setFunction;
 			spikeCeiling = ceiling;
 			spikeFloor = floor;
+		}
+
+		public void SetMinHoleVertices(int minVertices)
+		{
+			minHoleVertices = minVertices;
 		}
 
 		/// <summary>
@@ -211,7 +217,7 @@ namespace TileBakeLibrary
 			totalFiles = sourceFiles.Length;
 			if (sourceFiles.Length > 0)
 			{
-				cityJson = new CityJSON(sourceFiles[0], true, true);
+				cityJson = new CityJSON(sourceFiles[0], true, true, minHoleVertices);
 			}
 			for (int i = 0; i < sourceFiles.Length; i++)
             {
@@ -223,7 +229,7 @@ namespace TileBakeLibrary
                     nextJsonID = i;
                 }
                 Thread thread;
-                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);  });
+                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true, minHoleVertices);  });
                 thread.Start();
 
 				//Start reading current CityJSON

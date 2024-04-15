@@ -29,7 +29,6 @@ namespace TileBakeTool
     class Program
     {
         private static ConfigFile configFile;
-
         private static string sourcePathOverride = "";
         private static string outputPathOverride = "";
         private static float lodOverride = 1;
@@ -224,6 +223,7 @@ namespace TileBakeTool
             tileBaker.SetTargetPath((outputPathOverride != "") ? outputPathOverride : configFile.outputFolder);
             tileBaker.SetLOD((lodOverride != 1) ? lodOverride : configFile.lod);
             tileBaker.SetVertexMergeAngleThreshold(configFile.mergeVerticesBelowAngle);
+            tileBaker.SetMinHoleVertices(configFile.minHoleVertices);
             tileBaker.SetID(configFile.identifier, configFile.removePartOfIdentifier);
             tileBaker.SetReplace(configFile.replaceExistingObjects);
             tileBaker.SetExportUV(configFile.exportUVCoordinates);

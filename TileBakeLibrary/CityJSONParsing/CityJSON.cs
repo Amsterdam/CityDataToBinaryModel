@@ -43,10 +43,13 @@ namespace Netherlands3D.CityJSON
 
 		public Vector3Double TransformOffset { get => transformOffset; }
 
-		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true)
+		private int minHoleVertices = 3;
+
+		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true, int minHoleVertices = 4)
 		{
 			sourceFilePath = filepath;
 			cityJsonNode = JSON.StreamParse(filepath);
+			this.minHoleVertices = minHoleVertices;
 
 			if (cityJsonNode == null || cityJsonNode["CityObjects"] == null)
 			{
@@ -225,7 +228,6 @@ namespace Netherlands3D.CityJSON
 						}
 					}
 
-
 					//read SurfaceAttributes
 					JSONNode semanticsnode = geometrynode["semantics"];
 					if (semanticsnode != null)
@@ -308,7 +310,6 @@ namespace Netherlands3D.CityJSON
 				foreach (JSONNode vertexnode in node[0])
 				{
 					surf.outerRing.Add(vertices[vertexnode.AsInt]);
-
 				}
 				for (int i = 1; i < node.Count; i++)
 				{
@@ -398,11 +399,12 @@ namespace Netherlands3D.CityJSON
 				}
 
 				//Only more than triangle as holes
-				if(verts.Count > 3) {
-					surf.innerRings.Add(verts);	
+				if(verts.Count < minHoleVertices) 
+				{
+					sourceCityObject.holeWarnings += "- Found a hole with less than 4 vertices, skipping this hole.\n";
 				}
 				else{
-					sourceCityObject.holeWarnings += "- Found a hole with less than 3 vertices, skipping this hole.\n";
+					surf.innerRings.Add(verts);	
 				}
 			}
 			
