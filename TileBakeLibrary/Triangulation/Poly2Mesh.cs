@@ -18,6 +18,7 @@
 // 11-10-2021 - Option to add thickness to poly was added by 3D Amsterdam
 // 11-10-2021 - Added namespace to guard from conflicts in Unity3D by 3D Amsterdam
 
+using Netherlands3D.CityJSON;
 using Poly2Tri;
 using System;
 using System.Collections.Generic;
@@ -223,7 +224,7 @@ namespace JoeStrout
         /// </summary>
         /// <returns>The freshly minted mesh.</returns>
         /// <param name="polygon">Polygon you want to triangulate.</param>
-        public static void CreateMeshData(Polygon polygon, out Vector3[] vertices, out Vector3[] normals, out int[] triangles, out Vector2[] uvs, float thickness = 0)
+        public static void CreateMeshData(Polygon polygon, out Vector3[] vertices, out Vector3[] normals, out int[] triangles, out Vector2[] uvs, CityObject cityObject = null, float thickness = 0)
         {
             //make sure we out something in case of failure
             vertices = new Vector3[0];
@@ -263,7 +264,9 @@ namespace JoeStrout
             }
             catch (System.Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("Failed to triangulate polygon: " + e.Message);
+                Console.WriteLine("With name: " + cityObject.keyName);
+                cityObject.triangulationWarnings += "- Failed to triangulate polygon: " + e.Message + "\n";
                 return;
             }
             // Now, to get back to our original positions, use our code-to-position map.  We do

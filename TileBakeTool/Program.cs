@@ -22,13 +22,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using TileBakeLibrary;
+using TileBakeLibrary.BinaryMesh;
 
 namespace TileBakeTool
 {
     class Program
     {
         private static ConfigFile configFile;
-
         private static string sourcePathOverride = "";
         private static string outputPathOverride = "";
         private static float lodOverride = 1;
@@ -45,11 +45,18 @@ namespace TileBakeTool
             {
                 ShowHelp();
             }
-            //One parameter? Assume its a config file path. (Dragging file on .exe)
+            //One parameter? Inspect .bin or else assume its a config file
             else if (args.Length == 1)
             {
                 waitForUserInputOnFinish = true;
-                ApplyConfigFileSettings(args[0]);
+                if (args[0].Contains(".bin"))
+                {
+                    InspectBinaryMesh(args[0]);
+                }
+                else
+                {
+                    ApplyConfigFileSettings(args[0]);
+                }
             }
             //More parameters? Parse them
             else
@@ -129,8 +136,11 @@ namespace TileBakeTool
                     lodOverride = float.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
                     Console.WriteLine($"LOD filter: {lodOverride}");
                     break;
-                case "--peak":
+                case "--peek":
                     PeakInFile(value);
+                    break;
+                case "--bin":
+                    InspectBinaryMesh(value);
                     break;
                 default:
                     break;
@@ -139,9 +149,9 @@ namespace TileBakeTool
 
         private static void PeakInFile(string filename)
         {
-            if(!File.Exists(filename))
+            if (!File.Exists(filename))
             {
-                Console.WriteLine(filename + " does not exist. Cant peak.");
+                Console.WriteLine(filename + " does not exist. Cant peek.");
                 return;
             }
             using var stream = File.OpenRead(filename);
@@ -156,11 +166,57 @@ namespace TileBakeTool
             Console.WriteLine(".....");
         }
 
+        private static void InspectBinaryMesh(string filename)
+        {
+            if (!File.Exists(filename))
+            {
+                Console.WriteLine(filename + " does not exist. Cant inspect.");
+                return;
+            }
+            MeshData mesh = BinaryMeshReader.ReadBinaryMesh(filename);
+
+            // Write results to a text file
+            string outputFileName = Path.ChangeExtension(filename, ".txt");
+            using (StreamWriter writer = new StreamWriter(outputFileName))
+            {
+                writer.WriteLine("Vertices: " + mesh.vertexCount);
+                writer.WriteLine("Normals: " + mesh.normalsCount);
+                writer.WriteLine("UVs: " + mesh.uvCount);
+                writer.WriteLine("Indices: " + mesh.indexCount);
+                writer.WriteLine("Submeshes: " + mesh.submeshCount);
+                writer.WriteLine("Vertices:");
+                foreach (var vertex in mesh.vertices)
+                {
+                    writer.WriteLine(vertex);
+                }
+                writer.WriteLine("Normals:");
+                foreach (var normal in mesh.normals)
+                {
+                    writer.WriteLine(normal);
+                }
+                writer.WriteLine("UVs:");
+                foreach (var uv in mesh.uvs)
+                {
+                    writer.WriteLine(uv);
+                }
+                writer.WriteLine("Indices:");
+                foreach (var index in mesh.indices)
+                {
+                    writer.WriteLine(index);
+                }
+            }
+
+            //Log the log file path name
+            Console.WriteLine("Inspected " + filename + ". Results saved to " + outputFileName);
+        }
+
         /// <summary>
         /// Start the converting process using the current configuration
         /// </summary>
         private static void StartConverting()
         {
+             //Print config to console
+            Console.WriteLine(JsonSerializer.Serialize(configFile, new JsonSerializerOptions() { WriteIndented = true }));
             Console.WriteLine("Starting...");
 
             //Here we use the .dll. This way we may use this library in Unity, or an Azure C# Function
@@ -169,6 +225,8 @@ namespace TileBakeTool
             tileBaker.SetTargetPath((outputPathOverride != "") ? outputPathOverride : configFile.outputFolder);
             tileBaker.SetLOD((lodOverride != 1) ? lodOverride : configFile.lod);
             tileBaker.SetVertexMergeAngleThreshold(configFile.mergeVerticesBelowAngle);
+            tileBaker.SetMinHoleVertices(configFile.minHoleVertices);
+            tileBaker.SetMinHoleSize(configFile.minHoleSize);
             tileBaker.SetID(configFile.identifier, configFile.removePartOfIdentifier);
             tileBaker.SetReplace(configFile.replaceExistingObjects);
             tileBaker.SetExportUV(configFile.exportUVCoordinates);

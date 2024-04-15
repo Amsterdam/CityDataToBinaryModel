@@ -43,10 +43,15 @@ namespace Netherlands3D.CityJSON
 
 		public Vector3Double TransformOffset { get => transformOffset; }
 
-		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true)
+		private int minHoleVertices = 3;
+		private float minHoleSize = 1;
+
+		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true, int minHoleVertices = 3, float minHoleSize = 1)
 		{
 			sourceFilePath = filepath;
 			cityJsonNode = JSON.StreamParse(filepath);
+			this.minHoleVertices = minHoleVertices;
+			this.minHoleSize = minHoleSize;
 
 			if (cityJsonNode == null || cityJsonNode["CityObjects"] == null)
 			{
@@ -179,26 +184,16 @@ namespace Netherlands3D.CityJSON
 				{
 					if (geometrynode["type"] == "Solid")
 					{
-						JSONNode exteriorshell = geometrynode["boundaries"][0];
-						foreach (JSONNode surfacenode in exteriorshell)
-						{
-							surfaces.Add(ReadSurfaceVectors(surfacenode));
-						}
-						JSONNode interiorshell = geometrynode[0][1];
-						if (interiorshell != null)
-						{
-							foreach (JSONNode surfacenode in interiorshell)
-							{
-								surfaces.Add(ReadSurfaceVectors(surfacenode));
-							}
-						}
+						JSONNode boundaries = geometrynode["boundaries"];
+						surfaces = ReadSolid(geometrynode, cityObject);
 					}
-					if (geometrynode["type"] == "MultiSurface")
+					else if (geometrynode["type"] == "MultiSurface")
 					{
-						foreach (JSONNode surfacenode in geometrynode["boundaries"])
-						{
-							surfaces.Add(ReadSurfaceVectors(surfacenode));
-						}
+						surfaces = ReadMultiSurface(geometrynode, cityObject);
+					}
+					else
+					{
+						Console.WriteLine($"Unknown geometry type: {geometrynode["type"]}");
 					}
 
 					//read textureValues
@@ -234,7 +229,6 @@ namespace Netherlands3D.CityJSON
 							}
 						}
 					}
-
 
 					//read SurfaceAttributes
 					JSONNode semanticsnode = geometrynode["semantics"];
@@ -294,59 +288,21 @@ namespace Netherlands3D.CityJSON
 			return cityObject;
 		}
 
-		private List<Surface> ReadSolid(JSONNode geometrynode)
+		private List<Surface> ReadSolid(JSONNode geometrynode, CityObject sourceCityObject)
 		{
 			JSONNode boundariesNode = geometrynode["boundaries"];
 			List<Surface> result = new List<Surface>();
 
-			foreach (JSONNode node in boundariesNode[0])
-			{
-				Surface surf = new Surface();
-				foreach (JSONNode vertexnode in node[0])
-				{
-					surf.outerRing.Add(vertices[vertexnode.AsInt]);
-				}
-				result.Add(surf);
-			}
-			JSONNode semanticsnode = geometrynode["semantics"];
-			JSONNode ValuesNode = semanticsnode["values"][0];
-			for (int i = 0; i < ValuesNode.Count; i++)
-			{
-				result[i].SurfaceType = geometrynode["semantics"]["surfaces"][ValuesNode[i].AsInt]["type"];
-				result[i].semantics = ReadSemantics(geometrynode["semantics"]["surfaces"][ValuesNode[i].AsInt]);
+			//Read exterior shell
+			foreach (JSONNode surfacenode in boundariesNode[0])
+			{		
+				result.Add(ReadSurfaceVectors(surfacenode,sourceCityObject,true,true));
 			}
 
-			if (geometrynode["texture"] != null)
-			{
-				Surfacetexture surfacematerial = null;
-				int counter = 0;
-				foreach (JSONNode node in geometrynode["texture"][0][0])
-				{
-					List<Vector2> indices = new List<Vector2>();
-					for (int i = 0; i < node[0][0].Count; i++)
-					{
-						JSONNode item = node[0][0][i];
-
-						if (surfacematerial is null)
-						{
-							surfacematerial = Textures[item.AsInt];
-							result[i].surfacetexture = surfacematerial;
-						}
-						else
-						{
-							indices.Add(textureVertices[item.AsInt]);
-						}
-
-					}
-					indices.Reverse();
-					result[counter].outerringUVs = indices;
-					counter++;
-				}
-			}
 			return result;
 		}
 
-		private List<Surface> ReadMultiSurface(JSONNode geometrynode)
+		private List<Surface> ReadMultiSurface(JSONNode geometrynode, CityObject sourceCityObject)
 		{
 			JSONNode boundariesNode = geometrynode["boundaries"];
 			List<Surface> result = new List<Surface>();
@@ -356,7 +312,6 @@ namespace Netherlands3D.CityJSON
 				foreach (JSONNode vertexnode in node[0])
 				{
 					surf.outerRing.Add(vertices[vertexnode.AsInt]);
-
 				}
 				for (int i = 1; i < node.Count; i++)
 				{
@@ -420,16 +375,26 @@ namespace Netherlands3D.CityJSON
 			}
 			return surf;
 		}
-		private Surface ReadSurfaceVectors(JSONNode surfacenode)
+		private Surface ReadSurfaceVectors(JSONNode surfacenode, CityObject sourceCityObject, bool createOuterRing = true, bool createInnerRings = true)
 		{
 			Surface surf = new Surface();
 			//read exteriorRing
 			List<Vector3Double> verts = new List<Vector3Double>();
-			foreach (JSONNode vectornode in surfacenode[0])
+
+			if(createOuterRing)
 			{
-				verts.Add(vertices[vectornode.AsInt]);
-			}
-			surf.outerRing = verts;
+				foreach (JSONNode vectornode in surfacenode[0])
+				{
+					verts.Add(vertices[vectornode.AsInt]);
+				}
+				surf.outerRing = verts;	
+			}			
+
+			if(!createInnerRings)
+				return surf;
+
+			Vector3Double v1;
+			Vector3Double v2;
 			for (int i = 1; i < surfacenode.Count; i++)
 			{
 				verts = new List<Vector3Double>();
@@ -437,9 +402,33 @@ namespace Netherlands3D.CityJSON
 				{
 					verts.Add(vertices[vectornode.AsInt]);
 				}
-				surf.innerRings.Add(verts);
-			}
 
+				//Skip certain holes if they are too small, of dont have enough vertices
+				if(verts.Count < minHoleVertices) 
+				{
+					sourceCityObject.holeWarnings += $"- Found a hole with less than {minHoleVertices} vertices, skipping this hole.\n";
+				}
+				else
+				{
+					//Calculate the area of the hole
+					double holeSize = 0;
+					for (int j = 0; j < verts.Count; j++)
+					{
+						v1 = verts[j];
+						v2 = verts[(j + 1) % verts.Count];
+						holeSize += (v1.X * v2.Y - v1.Y * v2.X);
+					}
+					holeSize = Math.Abs(holeSize) / 2;	
+					if(holeSize < minHoleSize)
+					{
+						sourceCityObject.holeWarnings += $"- Found a hole smaller than {minHoleSize}. Hole size is {holeSize}, skipping this hole.\n";
+						continue;
+					}
+
+					surf.innerRings.Add(verts);	
+				}
+			}
+			
 			return surf;
 		}
 
@@ -465,6 +454,9 @@ namespace Netherlands3D.CityJSON
 		public List<CityObject> children;
 		public string cityObjectType;
 		public string keyName = "";
+
+		public string holeWarnings = "";
+		public string triangulationWarnings = "";
 
 		public CityObject()
 		{

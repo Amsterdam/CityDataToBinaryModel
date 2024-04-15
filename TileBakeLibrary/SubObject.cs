@@ -50,7 +50,6 @@ namespace TileBakeLibrary
 			Vector2 uv = new Vector2(0,0);
 			int oldIndex = 0;
 			int newIndex = 0;
-
 			
 			Dictionary<VertexNormalCombination,int> vertexNormalCombinations = new Dictionary<VertexNormalCombination,int>();
             for (int i = 0; i < triangleIndices.Count; i++)
@@ -101,6 +100,7 @@ namespace TileBakeLibrary
 			{
 				mesh.AppendTriangle(triangleIndices[i], triangleIndices[i + 1], triangleIndices[i + 2]);
 			}
+			
 
 			if(skipTrianglesBelowArea > 0)
             {
@@ -151,15 +151,10 @@ namespace TileBakeLibrary
 			MeshNormals.QuickCompute(mesh);
             MergeCoincidentEdges merg = new MergeCoincidentEdges(mesh);
             merg.Apply();
-            //if (!mesh.CheckValidity(true, FailMode.ReturnOnly))
-            //{
-            //    return;
-            //}
-
+           
             // setup up the reducer
             Reducer reducer = new Reducer(mesh);
             // set reducer to preserve bounds
-
             reducer.SetExternalConstraints(new MeshConstraints());
             MeshConstraintUtil.FixAllBoundaryEdges(reducer.Constraints, mesh);
 
@@ -235,18 +230,17 @@ namespace TileBakeLibrary
                 }
 				else
 				{ 
-                for (int y = localYmin; y < localYmax; y += (int)size.Y)
-                {
-                    SubObject newSubobject = ClipMesh(columnMesh, x, y,size.Y);
-                    if (newSubobject != null)
-                    {
+					for (int y = localYmin; y < localYmax; y += (int)size.Y)
+					{
+						SubObject newSubobject = ClipMesh(columnMesh, x, y,size.Y);
+						if (newSubobject != null)
+						{
 
-                        subObjects.Add(newSubobject);
-                    }
-                }
+							subObjects.Add(newSubobject);
+						}
+					}
 				}
 			}
-
 
             return subObjects;
 		}

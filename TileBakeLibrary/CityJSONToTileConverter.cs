@@ -34,6 +34,7 @@ namespace TileBakeLibrary
 {
 	public class CityJSONToTileConverter
 	{
+		private string logFileName = "";
 		private string sourcePath = "";
 		private string outputPath = "";
 		private string identifier = "";
@@ -58,6 +59,8 @@ namespace TileBakeLibrary
 		private float spikeCeiling = 0;
 		private float spikeFloor = 0;
 
+		private int minHoleVertices = 3;
+		private float minHoleSize = 0.0001f;
 		private int filecounter = 0;
 		private int totalFiles = 0;
 
@@ -83,6 +86,24 @@ namespace TileBakeLibrary
 			clipSpikes = setFunction;
 			spikeCeiling = ceiling;
 			spikeFloor = floor;
+		}
+
+		/// <summary>
+		/// Sets the minimum amount of vertices a hole should have to be considered a hole
+		/// </summary>
+		/// <param name="vertices">Min vertex count of the hole loop. Defaults to 3 ( a triangle )</param>
+		public void SetMinHoleVertices(int vertices)
+		{
+			minHoleVertices = vertices;
+		}
+
+		/// <summary>
+		/// Sets the minimum size of a hole in square meters
+		/// </summary>
+		/// <param name="size">Hole min size in square meters</param>
+		public void SetMinHoleSize(float size)
+		{
+			minHoleSize = size;
 		}
 
 		/// <summary>
@@ -177,6 +198,13 @@ namespace TileBakeLibrary
 		/// 
 		public void Convert()
 		{
+			//Create log file (overwrite)
+			var readableDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH_mm");
+			var currentPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);	
+
+			logFileName = currentPath + "/bakelog" + readableDateTime + ".txt";
+			File.WriteAllText(logFileName, string.Empty);
+
 			//If no specific filename or wildcard was supplied, default to .json files
 			var filter = Path.GetFileName(sourcePath);
 			if (filter == "") filter = "*.json";
@@ -203,7 +231,7 @@ namespace TileBakeLibrary
 			totalFiles = sourceFiles.Length;
 			if (sourceFiles.Length > 0)
 			{
-				cityJson = new CityJSON(sourceFiles[0], true, true);
+				cityJson = new CityJSON(sourceFiles[0], true, true, minHoleVertices, minHoleSize);
 			}
 			for (int i = 0; i < sourceFiles.Length; i++)
             {
@@ -215,7 +243,7 @@ namespace TileBakeLibrary
                     nextJsonID = i;
                 }
                 Thread thread;
-                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true);  });
+                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true, minHoleVertices, minHoleSize);  });
                 thread.Start();
 
 				//Start reading current CityJSON
@@ -227,12 +255,14 @@ namespace TileBakeLibrary
                 thread.Join();
                 cityJson = nextCityJSON;
             }
+			Console.WriteLine($"Log file: {currentPath}/bakelog{readableDateTime}.txt");
 
 			//Optional compressed variant
             if (brotliCompress)
 			{
 				CompressFiles();
 			}
+			Console.WriteLine($"Log file: {currentPath}/bakelog{readableDateTime}.txt");
 		}
 
 		/// <summary>
@@ -244,11 +274,24 @@ namespace TileBakeLibrary
             watch.Start();
             tiles = new List<Tile>();
          
-            var cityObjects = CityJSONParseProcess(cityJson);
+			//Warnings bag
+			var warnings = new ConcurrentBag<string>();
+            var cityObjects = CityJSONParseProcess(cityJson, warnings);
             allSubObjects.Clear();
             allSubObjects = cityObjects;
 
             Console.WriteLine($"\n{allSubObjects.Count} CityObjects with LOD{lod} were imported");
+
+			//write warnings to log newlines
+			if(warnings.Count > 0)
+				File.AppendAllText(logFileName, $"Warnings for {cityJson.sourceFilePath}\n");
+			foreach (var warning in warnings)
+			{
+				File.AppendAllText(logFileName, warning + "\n");
+			}
+			File.AppendAllText(logFileName, "\n");
+
+			//Tile the objects
             PrepareTiles();
             WriteTileData();
 
@@ -430,7 +473,7 @@ namespace TileBakeLibrary
 			bmd = null;
 		}
 
-		private List<SubObject> CityJSONParseProcess(CityJSON cityJson)
+		private List<SubObject> CityJSONParseProcess(CityJSON cityJson, ConcurrentBag<string> warnings)
 		{
 			List<SubObject> filteredObjects = new List<SubObject>();
 			Console.WriteLine("");
@@ -444,6 +487,7 @@ namespace TileBakeLibrary
 			int simplifying = 0;
 			int tiling = 0;
 			var filterObjectsBucket = new ConcurrentBag<SubObject>();
+			var failedSubObjects = new ConcurrentBag<string>();
 			int[] indices = Enumerable.Range(0, cityObjectCount).ToArray();
 
 			//Turn cityobjects (and their children) into SubObject mesh data
@@ -455,9 +499,17 @@ namespace TileBakeLibrary
 
 				CityObject cityObject = cityJson.LoadCityObjectByIndex(i, lod);
 				var subObject = ToSubObjectMeshData(cityObject);
+				
+				//Collect warnings for log
+				if(!string.IsNullOrEmpty(cityObject.holeWarnings))
+					warnings.Add(cityObject.keyName + ":\n" + cityObject.holeWarnings);
+				
+				if(!string.IsNullOrEmpty(cityObject.triangulationWarnings))
+					warnings.Add(cityObject.keyName + ":\n" + cityObject.holeWarnings);
+
 				cityObject = null;
 				Interlocked.Decrement(ref parsing);
-				cityObject = null;
+	
 				if (subObject == null)
 				{
 					Interlocked.Increment(ref done);
@@ -654,7 +706,6 @@ namespace TileBakeLibrary
 					{
 						normallist.AddRange(defaultnormalList);
 					}
-
 					continue;
 				}
 
@@ -707,7 +758,7 @@ namespace TileBakeLibrary
 					continue;
 				}
 				//Poly2Mesh takes care of calculating normals, using a right-handed coordinate system
-				Poly2Mesh.CreateMeshData(poly, out surfaceVertices, out surfaceNormals, out surfaceIndices, out surfaceUvs);
+				Poly2Mesh.CreateMeshData(poly, out surfaceVertices, out surfaceNormals, out surfaceIndices, out surfaceUvs, cityObject);
 
 				var offset = vertexlist.Count + subObject.vertices.Count;
 
