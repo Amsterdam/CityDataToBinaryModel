@@ -59,7 +59,7 @@ namespace TileBakeLibrary
 		private float spikeCeiling = 0;
 		private float spikeFloor = 0;
 
-		private int minHoleVertices = 4;
+		private int minHoleVertices = 3;
 		private int filecounter = 0;
 		private int totalFiles = 0;
 

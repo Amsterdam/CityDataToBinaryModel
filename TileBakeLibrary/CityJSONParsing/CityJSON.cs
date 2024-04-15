@@ -45,7 +45,7 @@ namespace Netherlands3D.CityJSON
 
 		private int minHoleVertices = 3;
 
-		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true, int minHoleVertices = 4)
+		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true, int minHoleVertices = 3)
 		{
 			sourceFilePath = filepath;
 			cityJsonNode = JSON.StreamParse(filepath);
@@ -401,7 +401,7 @@ namespace Netherlands3D.CityJSON
 				//Only more than triangle as holes
 				if(verts.Count < minHoleVertices) 
 				{
-					sourceCityObject.holeWarnings += "- Found a hole with less than 4 vertices, skipping this hole.\n";
+					sourceCityObject.holeWarnings += $"- Found a hole with less than {minHoleVertices} vertices, skipping this hole.\n";
 				}
 				else{
 					surf.innerRings.Add(verts);	
