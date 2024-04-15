@@ -60,6 +60,7 @@ namespace TileBakeLibrary
 		private float spikeFloor = 0;
 
 		private int minHoleVertices = 3;
+		private float minHoleSize = 0.0001f;
 		private int filecounter = 0;
 		private int totalFiles = 0;
 
@@ -87,9 +88,22 @@ namespace TileBakeLibrary
 			spikeFloor = floor;
 		}
 
-		public void SetMinHoleVertices(int minVertices)
+		/// <summary>
+		/// Sets the minimum amount of vertices a hole should have to be considered a hole
+		/// </summary>
+		/// <param name="minHoleVertices">Min vertex count of the hole loop. Defaults to 3 ( a triangle )</param>
+		public void SetMinHoleVertices(int minHoleVertices)
 		{
-			minHoleVertices = minVertices;
+			this.minHoleVertices = minHoleVertices;
+		}
+
+		/// <summary>
+		/// Sets the minimum size of a hole in square meters
+		/// </summary>
+		/// <param name="minHoleSize">Hole min size in square meters</param>
+		public void SetMinHoleSize(float minHoleSize)
+		{
+			this.minHoleSize = minHoleSize;
 		}
 
 		/// <summary>
@@ -217,7 +231,7 @@ namespace TileBakeLibrary
 			totalFiles = sourceFiles.Length;
 			if (sourceFiles.Length > 0)
 			{
-				cityJson = new CityJSON(sourceFiles[0], true, true, minHoleVertices);
+				cityJson = new CityJSON(sourceFiles[0], true, true, minHoleVertices, minHoleSize);
 			}
 			for (int i = 0; i < sourceFiles.Length; i++)
             {
@@ -229,7 +243,7 @@ namespace TileBakeLibrary
                     nextJsonID = i;
                 }
                 Thread thread;
-                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true, minHoleVertices);  });
+                thread = new Thread(() =>  {  nextCityJSON = new CityJSON(sourceFiles[nextJsonID], true, true, minHoleVertices, minHoleSize);  });
                 thread.Start();
 
 				//Start reading current CityJSON

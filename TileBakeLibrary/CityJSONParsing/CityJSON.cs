@@ -44,12 +44,14 @@ namespace Netherlands3D.CityJSON
 		public Vector3Double TransformOffset { get => transformOffset; }
 
 		private int minHoleVertices = 3;
+		private float minHoleSize = 1;
 
-		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true, int minHoleVertices = 3)
+		public CityJSON(string filepath, bool applyTransformScale = true, bool applyTransformOffset = true, int minHoleVertices = 3, float minHoleSize = 1)
 		{
 			sourceFilePath = filepath;
 			cityJsonNode = JSON.StreamParse(filepath);
 			this.minHoleVertices = minHoleVertices;
+			this.minHoleSize = minHoleSize;
 
 			if (cityJsonNode == null || cityJsonNode["CityObjects"] == null)
 			{
@@ -390,6 +392,9 @@ namespace Netherlands3D.CityJSON
 
 			if(!createInnerRings)
 				return surf;
+
+			Vector3Double v1;
+			Vector3Double v2;
 			for (int i = 1; i < surfacenode.Count; i++)
 			{
 				verts = new List<Vector3Double>();
@@ -398,12 +403,27 @@ namespace Netherlands3D.CityJSON
 					verts.Add(vertices[vectornode.AsInt]);
 				}
 
-				//Only more than triangle as holes
+				//Skip certain holes if they are too small, of dont have enough vertices
 				if(verts.Count < minHoleVertices) 
 				{
 					sourceCityObject.holeWarnings += $"- Found a hole with less than {minHoleVertices} vertices, skipping this hole.\n";
 				}
-				else{
+				else
+				{
+					//Calculate the area of the hole
+					double holeSize = 0;
+					for (int j = 0; j < verts.Count; j++)
+					{
+						v1 = verts[j];
+						v2 = verts[(j + 1) % verts.Count];
+						holeSize += (v1.X * v2.Z - v1.Z * v2.X);
+					}
+					if(holeSize < minHoleSize)
+					{
+						sourceCityObject.holeWarnings += $"- Found a hole with an area size of {holeSize}, skipping this hole.\n";
+						continue;
+					}
+					
 					surf.innerRings.Add(verts);	
 				}
 			}

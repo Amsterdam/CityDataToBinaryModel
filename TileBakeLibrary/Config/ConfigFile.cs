@@ -33,6 +33,7 @@ public class ConfigFile
 	public int tileSize { get; set; } = 1000;
 	public float mergeVerticesBelowAngle { get; set; } = 5;
 	public int minHoleVertices { get; set; } = 3;
+	public float minHoleSize { get; set; } = 0;
 	public bool brotliCompression { get; set; } = false;
 	public bool removeSpikes { get; set; } = false;
 	public float removeSpikesAbove { get; set; } = 25;
