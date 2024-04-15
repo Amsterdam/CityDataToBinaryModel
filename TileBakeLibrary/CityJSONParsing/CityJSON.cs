@@ -418,11 +418,10 @@ namespace Netherlands3D.CityJSON
 						v2 = verts[(j + 1) % verts.Count];
 						holeSize += (v1.X * v2.Z - v1.Z * v2.X);
 					}
-					holeSize = Math.Abs(holeSize) / 2;
-					
+					holeSize = Math.Abs(holeSize) / 2;	
 					if(holeSize < minHoleSize)
 					{
-						sourceCityObject.holeWarnings += $"- Found a hole with an area size of {holeSize}, skipping this hole.\n";
+						sourceCityObject.holeWarnings += $"- Found a hole smaller than {minHoleSize}. Hole size is {holeSize}, skipping this hole.\n";
 						continue;
 					}
 
