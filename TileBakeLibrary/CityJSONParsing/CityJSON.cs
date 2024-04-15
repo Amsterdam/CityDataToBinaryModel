@@ -416,7 +416,7 @@ namespace Netherlands3D.CityJSON
 					{
 						v1 = verts[j];
 						v2 = verts[(j + 1) % verts.Count];
-						holeSize += (v1.X * v2.Z - v1.Z * v2.X);
+						holeSize += (v1.X * v2.Y - v1.Y * v2.X);
 					}
 					holeSize = Math.Abs(holeSize) / 2;	
 					if(holeSize < minHoleSize)
