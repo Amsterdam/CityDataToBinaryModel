@@ -215,6 +215,8 @@ namespace TileBakeTool
         /// </summary>
         private static void StartConverting()
         {
+             //Print config to console
+            Console.WriteLine(JsonSerializer.Serialize(configFile, new JsonSerializerOptions() { WriteIndented = true }));
             Console.WriteLine("Starting...");
 
             //Here we use the .dll. This way we may use this library in Unity, or an Azure C# Function
@@ -224,6 +226,7 @@ namespace TileBakeTool
             tileBaker.SetLOD((lodOverride != 1) ? lodOverride : configFile.lod);
             tileBaker.SetVertexMergeAngleThreshold(configFile.mergeVerticesBelowAngle);
             tileBaker.SetMinHoleVertices(configFile.minHoleVertices);
+            tileBaker.SetMinHoleSize(configFile.minHoleSize);
             tileBaker.SetID(configFile.identifier, configFile.removePartOfIdentifier);
             tileBaker.SetReplace(configFile.replaceExistingObjects);
             tileBaker.SetExportUV(configFile.exportUVCoordinates);
