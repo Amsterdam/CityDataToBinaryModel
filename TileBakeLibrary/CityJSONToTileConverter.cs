@@ -91,19 +91,19 @@ namespace TileBakeLibrary
 		/// <summary>
 		/// Sets the minimum amount of vertices a hole should have to be considered a hole
 		/// </summary>
-		/// <param name="minHoleVertices">Min vertex count of the hole loop. Defaults to 3 ( a triangle )</param>
-		public void SetMinHoleVertices(int minHoleVertices)
+		/// <param name="vertices">Min vertex count of the hole loop. Defaults to 3 ( a triangle )</param>
+		public void SetMinHoleVertices(int vertices)
 		{
-			this.minHoleVertices = minHoleVertices;
+			minHoleVertices = vertices;
 		}
 
 		/// <summary>
 		/// Sets the minimum size of a hole in square meters
 		/// </summary>
-		/// <param name="minHoleSize">Hole min size in square meters</param>
-		public void SetMinHoleSize(float minHoleSize)
+		/// <param name="size">Hole min size in square meters</param>
+		public void SetMinHoleSize(float size)
 		{
-			this.minHoleSize = minHoleSize;
+			minHoleSize = size;
 		}
 
 		/// <summary>
