@@ -151,15 +151,10 @@ namespace TileBakeLibrary
 			MeshNormals.QuickCompute(mesh);
             MergeCoincidentEdges merg = new MergeCoincidentEdges(mesh);
             merg.Apply();
-            //if (!mesh.CheckValidity(true, FailMode.ReturnOnly))
-            //{
-            //    return;
-            //}
-
+           
             // setup up the reducer
             Reducer reducer = new Reducer(mesh);
             // set reducer to preserve bounds
-
             reducer.SetExternalConstraints(new MeshConstraints());
             MeshConstraintUtil.FixAllBoundaryEdges(reducer.Constraints, mesh);
 
