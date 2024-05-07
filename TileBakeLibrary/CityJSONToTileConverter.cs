@@ -431,10 +431,18 @@ namespace TileBakeLibrary
         /// </summary>
         public void CompressFiles()
 		{
-			var filter = $"*{lod}.bin";
+			var binFilesFilter = $"*{lod}.bin";
+			var dataFilesFilter = $"*{lod}-data.bin";
 
-			//List the files that we are going to parse
-			string[] binFiles = Directory.GetFiles(Path.GetDirectoryName(outputPath), filter);
+			string[] binFiles = Directory.GetFiles(Path.GetDirectoryName(outputPath), binFilesFilter);
+			string[] binDataFiles = Directory.GetFiles(Path.GetDirectoryName(outputPath), dataFilesFilter);
+
+			List<string> allFiles = new List<string>();
+			allFiles.AddRange(binFiles);
+			allFiles.AddRange(binDataFiles);
+			
+			binFiles = allFiles.ToArray();
+
 			Stopwatch watch = new Stopwatch();
 			watch.Start();
 			int compressedCount = 0;
