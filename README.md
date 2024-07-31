@@ -1,3 +1,10 @@
+## ⚠️ Development Has Moved!
+
+**Attention:** Development for this project has moved to a new location.
+Please refer to [github.com/Netherlands3D/CartesianTileBakeTool](https://github.com/Netherlands3D/CartesianTileBakeTool) for the latest updates and contributions.
+
+If you have any questions or concerns, feel free to reach out to us.
+
 # CityDataToBinaryModel
 
 ## TileBakeTool
